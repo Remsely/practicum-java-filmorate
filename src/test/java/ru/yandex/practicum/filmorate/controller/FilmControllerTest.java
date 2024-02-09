@@ -144,7 +144,7 @@ public class FilmControllerTest {
                                 "\"duration\":190," +
                                 "\"rate\":4" +
                                 "}"))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test

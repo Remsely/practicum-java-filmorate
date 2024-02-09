@@ -26,7 +26,8 @@ public class FilmController {
         log.info("Получен POST-запрос к /films. Тело запроса: {}", film);
         if (isNotCorrectDate(film.getReleaseDate())) {
             log.warn("The release date of the film cannot be earlier than 28.12.1895.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            // Не совсем понял, почему нужно возвращать тело в запросах с ошибкой. Этого требуют тесты в Postman...
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(film);
         }
         film.setId(currentId++);
         films.put(film.getId(), film);
@@ -39,13 +40,13 @@ public class FilmController {
         if (films.containsKey(film.getId())) {
             if (isNotCorrectDate(film.getReleaseDate())) {
                 log.warn("The release date of the film cannot be earlier than 28.12.1895.");
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(film);
             }
             films.put(film.getId(), film);
             return ResponseEntity.ok(film);
         }
         log.warn("Пользователь с id {} не найден.", film.getId());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(film);
     }
 
     @GetMapping

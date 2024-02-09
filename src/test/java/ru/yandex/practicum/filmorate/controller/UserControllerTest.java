@@ -125,7 +125,7 @@ public class UserControllerTest {
                                 "\"name\":\"User Update\"," +
                                 "\"birthday\":\"2004-03-25\"" +
                                 "}"))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test
