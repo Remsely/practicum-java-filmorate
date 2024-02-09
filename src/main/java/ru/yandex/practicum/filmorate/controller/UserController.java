@@ -20,6 +20,9 @@ public class UserController {
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
         log.info("Получен POST-запрос к /users. Тело запроса: {}", user);
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
         user.setId(currentId++);
         users.put(user.getId(), user);
         return user;

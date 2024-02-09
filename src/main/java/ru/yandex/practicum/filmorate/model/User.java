@@ -23,14 +23,4 @@ public class User {
 
     @PastOrPresent
     private LocalDate birthday;
-
-    public void setName(String name) {
-        this.name = name.isBlank() ? login : name;
-    }
-
-    public void setLogin(String login) {
-        this.login = login;
-        if (name == null || name.isBlank())
-            name = login;
-    }
 }
