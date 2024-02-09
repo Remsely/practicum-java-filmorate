@@ -1,11 +1,12 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import javax.validation.Valid;
-import javax.validation.ValidationException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,34 +22,36 @@ public class FilmController {
     private int currentId = 1;
 
     @PostMapping
-    public Film addFilm(@Valid @RequestBody Film film) {
+    public ResponseEntity<Film> addFilm(@Valid @RequestBody Film film) {
         log.info("Получен POST-запрос к /films. Тело запроса: {}", film);
         if (isNotCorrectDate(film.getReleaseDate())) {
-            throw new ValidationException("The release date of the film cannot be earlier than 28.12.1895.");
+            log.warn("The release date of the film cannot be earlier than 28.12.1895.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
         film.setId(currentId++);
         films.put(film.getId(), film);
-        return film;
+        return ResponseEntity.ok(film);
     }
 
     @PutMapping
-    public Film updateUser(@Valid @RequestBody Film film) {
+    public ResponseEntity<Film> updateFilm(@Valid @RequestBody Film film) {
         log.info("Получен PUT-запрос к /films. Тело запроса: {}", film);
         if (films.containsKey(film.getId())) {
             if (isNotCorrectDate(film.getReleaseDate())) {
-                throw new ValidationException("The release date of the film cannot be earlier than 28.12.1895.");
+                log.warn("The release date of the film cannot be earlier than 28.12.1895.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
             }
             films.put(film.getId(), film);
-            return film;
+            return ResponseEntity.ok(film);
         }
         log.warn("Пользователь с id {} не найден.", film.getId());
-        throw new RuntimeException("Фильм с таким id не найден.");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
     }
 
     @GetMapping
-    public List<Film> getFilms() {
+    public ResponseEntity<List<Film>> getFilms() {
         log.info("Получен GET-запрос к /films.");
-        return new ArrayList<>(films.values());
+        return ResponseEntity.ok(new ArrayList<>(films.values()));
     }
 
     private boolean isNotCorrectDate(LocalDate releaseDate) {
