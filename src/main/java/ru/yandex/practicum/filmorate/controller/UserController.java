@@ -38,7 +38,7 @@ public class UserController {
             return ResponseEntity.ok(user);
         }
         log.warn("Пользователь с id {} не найден.", user.getId());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(user);
     }
 
     @GetMapping
