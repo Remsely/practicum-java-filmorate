@@ -1,23 +1,32 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class UserControllerTest {
     private static final String USERS_PATH = "/users";
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    @AfterEach
+    public void clear() {
+        UserController userController = applicationContext.getBean(UserController.class);
+        userController.clear();
+    }
 
     @Test
     public void testCreateUser() throws Exception {
@@ -56,6 +65,18 @@ public class UserControllerTest {
                                 "\"name\":\"\"," +
                                 "\"email\":\"mail.ru\"," +
                                 "\"birthday\":\"2004-03-25\"" +
+                                "}"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    public void testCreateUserFailBirthday() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post(USERS_PATH)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"login\":\"dolore\"," +
+                                "\"name\":\"dolore\"," +
+                                "\"email\":\"mail.ru\"," +
+                                "\"birthday\":\"2034-03-25\"" +
                                 "}"))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
@@ -133,7 +154,7 @@ public class UserControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post(USERS_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{" +
-                                "\"email\":\"test@example.com\"," +
+                                "\"email\":\"test@example.comdfg\"," +
                                 "\"login\":\"test\"," +
                                 "\"name\":\"Test User\"," +
                                 "\"birthday\":\"2004-03-25\"" +
@@ -143,7 +164,7 @@ public class UserControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get(USERS_PATH)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].email").value("test@example.com"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].email").value("test@example.comdfg"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].login").value("test"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].name").value("Test User"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].birthday").value("2004-03-25"));

@@ -45,4 +45,9 @@ public class FilmController {
         log.info("Получен GET-запрос к /films.");
         return ResponseEntity.ok(new ArrayList<>(films.values()));
     }
+
+    public void clear() {
+        currentId = 1;
+        films.clear();
+    }
 }

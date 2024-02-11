@@ -46,4 +46,9 @@ public class UserController {
         log.info("Получен GET-запрос к /users.");
         return ResponseEntity.ok(new ArrayList<>(users.values()));
     }
+
+    public void clear() {
+        currentId = 1;
+        users.clear();
+    }
 }

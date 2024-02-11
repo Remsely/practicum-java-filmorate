@@ -1,11 +1,12 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -14,12 +15,20 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 // как тестить spring boot. Меня смущает, что эти тесты медленные. +- 300мс на каждый.
 @SpringBootTest
 @AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class FilmControllerTest {
     private static final String FILMS_PATH = "/films";
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    @AfterEach
+    public void clear() {
+        FilmController filmController = applicationContext.getBean(FilmController.class);
+        filmController.clear();
+    }
 
     @Test
     public void testCreateFilm() throws Exception {
