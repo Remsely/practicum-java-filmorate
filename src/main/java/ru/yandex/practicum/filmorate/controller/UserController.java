@@ -8,17 +8,12 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
-public class UserController {
-    private final Map<Integer, User> users = new HashMap<>();
-    private int currentId = 1;
-
+public class UserController extends AbstractController<User> {
     @PostMapping
     public ResponseEntity<User> addUser(@Valid @RequestBody User user) {
         log.info("Получен POST-запрос к /users. Тело запроса: {}", user);
@@ -26,15 +21,15 @@ public class UserController {
             user.setName(user.getLogin());
         }
         user.setId(currentId++);
-        users.put(user.getId(), user);
+        data.put(user.getId(), user);
         return ResponseEntity.ok(user);
     }
 
     @PutMapping
     public ResponseEntity<User> updateUser(@Valid @RequestBody User user) {
         log.info("Получен PUT-запрос к /users. Тело запроса: {}", user);
-        if (users.containsKey(user.getId())) {
-            users.put(user.getId(), user);
+        if (data.containsKey(user.getId())) {
+            data.put(user.getId(), user);
             return ResponseEntity.ok(user);
         }
         log.warn("Пользователь с id {} не найден.", user.getId());
@@ -44,11 +39,6 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<User>> getUsers() {
         log.info("Получен GET-запрос к /users.");
-        return ResponseEntity.ok(new ArrayList<>(users.values()));
-    }
-
-    public void clear() {
-        currentId = 1;
-        users.clear();
+        return ResponseEntity.ok(new ArrayList<>(data.values()));
     }
 }
