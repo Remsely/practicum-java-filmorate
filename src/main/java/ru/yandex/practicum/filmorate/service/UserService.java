@@ -38,6 +38,15 @@ public class UserService {
         );
     }
 
+    public User getUser(long id) {
+        if (!userStorage.containsUser(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
+            );
+        }
+        return userStorage.get(id);
+    }
+
     public List<User> getAllUsers() {
         return userStorage.getAll();
     }
@@ -54,15 +63,6 @@ public class UserService {
             );
         }
         return userStorage.addFriend(id, friendId);
-    }
-
-    public User getFriend(long id) {
-        if (!userStorage.containsUser(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
-            );
-        }
-        return userStorage.get(id);
     }
 
     public User removeFriend(long id, long friendId) {

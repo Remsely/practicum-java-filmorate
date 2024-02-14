@@ -31,13 +31,17 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void addLike(long id, long userId) {
-        data.get(id).getLikes().add(userId);
+    public Film addLike(long id, long userId) {
+        Film film = data.get(id);
+        film.getLikes().add(userId);
+        return film;
     }
 
     @Override
-    public void removeLike(long id, long userId) {
-        data.get(id).getLikes().remove(userId);
+    public Film removeLike(long id, long userId) {
+        Film film = data.get(id);
+        film.getLikes().remove(userId);
+        return film;
     }
 
     @Override
@@ -46,7 +50,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopular(long count) {
+    public List<Film> getPopular(int count) {
         return data.values().stream()
                 .sorted(Comparator.comparingInt(film -> -film.getLikes().size()))
                 .limit(count)

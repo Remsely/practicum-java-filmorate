@@ -24,6 +24,23 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
+    public User update(User user) {
+        long id = user.getId();
+        data.put(id, user);
+        return user;
+    }
+
+    @Override
+    public User get(long id) {
+        return data.get(id);
+    }
+
+    @Override
+    public List<User> getAll() {
+        return new ArrayList<>(data.values());
+    }
+
+    @Override
     public User addFriend(long id, long friendId) {
         User requestUser = data.get(id);
         User responseUser = data.get(friendId);
@@ -44,18 +61,6 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User update(User user) {
-        long id = user.getId();
-        data.put(id, user);
-        return user;
-    }
-
-    @Override
-    public User get(long id) {
-        return data.get(id);
-    }
-
-    @Override
     public List<User> getFriends(long id) {
         return data.get(id).getFriends().stream()
                 .map(data::get)
@@ -70,11 +75,6 @@ public class InMemoryUserStorage implements UserStorage {
         return commonFriends.stream()
                 .map(data::get)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<User> getAll() {
-        return new ArrayList<>(data.values());
     }
 
     @Override

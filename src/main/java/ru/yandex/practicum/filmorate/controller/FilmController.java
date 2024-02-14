@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -32,10 +33,37 @@ public class FilmController {
         return filmService.updateFilm(film);
     }
 
+    @GetMapping("/{id}")
+    public Film getFilm(@PathVariable long id) {
+        log.info("Получен GET-запрос к /films/{}.", id);
+        return filmService.getFilm(id);
+    }
+
     @GetMapping
     public List<Film> getFilms() {
         log.info("Получен GET-запрос к /films.");
         return filmService.getAllFilms();
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public Film putLike(@PathVariable long id, @PathVariable long userId) {
+        log.info("Получен PUT-запрос к /films/{}/like/{}.", id, userId);
+        return filmService.addLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public Film deleteLike(@PathVariable long id, @PathVariable long userId) {
+        log.info("Получен DELETE-запрос к /films/{}/like/{}.", id, userId);
+        return filmService.removeLike(id, userId);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> getPopular(@RequestParam Optional<Integer> count) {
+        log.info("Получен GET-запрос к /films/popular?count={}.", count);
+        if (count.isEmpty()) {
+            return filmService.getPopular(10);
+        }
+        return filmService.getPopular(count.get());
     }
 
     public void clear() {

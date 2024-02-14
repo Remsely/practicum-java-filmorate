@@ -20,7 +20,7 @@ public class Film {
     @Size(max = 200, message = "Максимальная длинна описания фильма - 200 символов.")
     private String description;
 
-    @AfterDate(lowerBound = "1895-12-28")
+    @AfterDate(lowerBound = "1895-12-28", message = "Дата релиза фильма не может быть раньше 28.12.1895.")
     private LocalDate releaseDate;
 
     @Positive(message = "Продолжительность фильма должна быть положительной.")

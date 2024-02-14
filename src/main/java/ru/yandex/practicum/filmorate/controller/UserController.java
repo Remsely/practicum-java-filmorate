@@ -32,6 +32,12 @@ public class UserController {
         return userService.updateUser(user);
     }
 
+    @GetMapping("/{id}")
+    public User getUser(@PathVariable long id) {
+        log.info("Получен GET-запрос к /users/{}.", id);
+        return userService.getUser(id);
+    }
+
     @GetMapping
     public List<User> getUsers() {
         log.info("Получен GET-запрос к /users.");
@@ -40,7 +46,7 @@ public class UserController {
 
     @PutMapping("/{id}/friends/{friendId}")
     public User putFriend(@PathVariable long id, @PathVariable long friendId) {
-        log.info("Получен PUT-запрос к /users/{}/friends/{}. {} ", id, friendId, userService.getFriend(id));
+        log.info("Получен PUT-запрос к /users/{}/friends/{}. {} ", id, friendId, userService.getUser(id));
         User user = userService.addFriend(id, friendId);
         log.error("{}.", user);
         return user;
@@ -56,12 +62,6 @@ public class UserController {
     public List<User> getFriends(@PathVariable long id) {
         log.info("Получен GET-запрос к /users/{}/friends.", id);
         return userService.getFriends(id);
-    }
-
-    @GetMapping("/{id}")
-    public User getFriend(@PathVariable long id) {
-        log.info("Получен GET-запрос к /users/{}.", id);
-        return userService.getFriend(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")

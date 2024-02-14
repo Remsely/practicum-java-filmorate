@@ -23,7 +23,7 @@ public class User {
 
     private String name;
 
-    @PastOrPresent
+    @PastOrPresent(message = "Дата рождения не может быть в будущем.")
     private LocalDate birthday;
 
     private Set<Long> friends = new TreeSet<>();
