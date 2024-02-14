@@ -6,6 +6,6 @@ import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
 @AllArgsConstructor
 @Getter
-public class NotFoundException extends RuntimeException {
+public class EntityNotFoundException extends RuntimeException {
     private final ErrorResponse errorResponse;
 }

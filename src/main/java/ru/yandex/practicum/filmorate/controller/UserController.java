@@ -28,6 +28,7 @@ public class UserController {
 
     @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
+        log.info("Получен PUT-запрос к /users. Тело запроса: {}", user);
         return userService.updateUser(user);
     }
 

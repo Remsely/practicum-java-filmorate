@@ -1,14 +1,10 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
@@ -30,31 +26,31 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film update(Film film) {
         long id = film.getId();
-        if (data.containsKey(id)) {
-            data.put(id, film);
-            return film;
-        }
-        throw new NotFoundException(new ErrorResponse("Film id", "Не найден фильм с таким ID."));
+        data.put(id, film);
+        return film;
     }
 
     @Override
-    public void addLike(int id, int userId) {
-
+    public void addLike(long id, long userId) {
+        data.get(id).getLikes().add(userId);
     }
 
     @Override
-    public void removeLike(int id, int userId) {
-
+    public void removeLike(long id, long userId) {
+        data.get(id).getLikes().remove(userId);
     }
 
     @Override
-    public Film get(int id) {
-        return null;
+    public Film get(long id) {
+        return data.get(id);
     }
 
     @Override
-    public List<Film> getPopular(int count) {
-        return null;
+    public List<Film> getPopular(long count) {
+        return data.values().stream()
+                .sorted(Comparator.comparingInt(film -> -film.getLikes().size()))
+                .limit(count)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -66,5 +62,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     public void clear() {
         currentId = 1;
         data.clear();
+    }
+
+    @Override
+    public boolean containsFilm(long id) {
+        return data.containsKey(id);
     }
 }

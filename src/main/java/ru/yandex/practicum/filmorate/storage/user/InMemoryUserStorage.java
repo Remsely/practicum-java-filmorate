@@ -1,14 +1,12 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class InMemoryUserStorage implements UserStorage {
@@ -28,38 +26,47 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void addFriend(int id, int friendId) {
-
+    public User addFriend(long id, long friendId) {
+        User user = data.get(id);
+        user.getFriends().add(friendId);
+        return user;
     }
 
     @Override
-    public void removeFriend(int id, int friendId) {
-
+    public User removeFriend(long id, long friendId) {
+        User user = data.get(id);
+        user.getFriends().remove(friendId);
+        return user;
     }
 
     @Override
     public User update(User user) {
         long id = user.getId();
-        if (data.containsKey(id)) {
-            data.put(id, user);
-            return user;
-        }
-        throw new NotFoundException(new ErrorResponse("User id", "Не найден пользователь с таким ID."));
+        data.put(id, user);
+        return user;
     }
 
     @Override
-    public User get(int id) {
-        return null;
+    public User get(long id) {
+        return data.get(id);
     }
 
     @Override
-    public List<User> getFriends(int id) {
-        return null;
+    public List<User> getFriends(long id) {
+        return data.get(id).getFriends().stream()
+                .map(data::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<User> getCommonFriends(int id, int otherId) {
-        return null;
+    public List<User> getCommonFriends(long id, long otherId) {
+        Set<Long> commonFriends = data.get(id).getFriends();
+        Set<Long> otherUserFriends = data.get(otherId).getFriends();
+        commonFriends.retainAll(otherUserFriends);
+        return commonFriends.stream()
+                .map(data::get)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -71,5 +78,10 @@ public class InMemoryUserStorage implements UserStorage {
     public void clear() {
         currentId = 1;
         data.clear();
+    }
+
+    @Override
+    public boolean containsUser(long id) {
+        return data.containsKey(id);
     }
 }

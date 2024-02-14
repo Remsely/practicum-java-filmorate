@@ -7,6 +7,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.PastOrPresent;
 import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
+import java.util.Set;
+import java.util.TreeSet;
 
 @Data
 public class User {
@@ -23,4 +25,6 @@ public class User {
 
     @PastOrPresent
     private LocalDate birthday;
+
+    private Set<Long> friends = new TreeSet<>();
 }

@@ -11,8 +11,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-//Не знаю, насколько хорошие и правильные эти тесты. Решил, что глупо вручную писать валидацию для тестов, и загуглил,
-// как тестить spring boot. Меня смущает, что эти тесты медленные. +- 300мс на каждый.
 @SpringBootTest
 @AutoConfigureMockMvc
 public class FilmControllerTest {
