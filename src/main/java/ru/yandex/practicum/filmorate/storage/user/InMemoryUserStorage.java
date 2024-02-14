@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
-import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
@@ -27,16 +25,22 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User addFriend(long id, long friendId) {
-        User user = data.get(id);
-        user.getFriends().add(friendId);
-        return user;
+        User requestUser = data.get(id);
+        User responseUser = data.get(friendId);
+
+        requestUser.getFriends().add(friendId);
+        responseUser.getFriends().add(id);
+        return requestUser;
     }
 
     @Override
     public User removeFriend(long id, long friendId) {
-        User user = data.get(id);
-        user.getFriends().remove(friendId);
-        return user;
+        User requestUser = data.get(id);
+        User responseUser = data.get(friendId);
+
+        requestUser.getFriends().remove(friendId);
+        responseUser.getFriends().remove(id);
+        return requestUser;
     }
 
     @Override
@@ -61,9 +65,8 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> getCommonFriends(long id, long otherId) {
-        Set<Long> commonFriends = data.get(id).getFriends();
-        Set<Long> otherUserFriends = data.get(otherId).getFriends();
-        commonFriends.retainAll(otherUserFriends);
+        Set<Long> commonFriends = new TreeSet<>(data.get(id).getFriends());
+        commonFriends.retainAll(data.get(otherId).getFriends());
         return commonFriends.stream()
                 .map(data::get)
                 .collect(Collectors.toList());

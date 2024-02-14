@@ -38,6 +38,38 @@ public class UserController {
         return userService.getAllUsers();
     }
 
+    @PutMapping("/{id}/friends/{friendId}")
+    public User putFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.info("Получен PUT-запрос к /users/{}/friends/{}. {} ", id, friendId, userService.getFriend(id));
+        User user = userService.addFriend(id, friendId);
+        log.error("{}.", user);
+        return user;
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public User deleteFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.info("Получен DELETE-запрос к /users/{}/friends/{}.", id, friendId);
+        return userService.removeFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> getFriends(@PathVariable long id) {
+        log.info("Получен GET-запрос к /users/{}/friends.", id);
+        return userService.getFriends(id);
+    }
+
+    @GetMapping("/{id}")
+    public User getFriend(@PathVariable long id) {
+        log.info("Получен GET-запрос к /users/{}.", id);
+        return userService.getFriend(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
+        log.info("Получен GET-запрос к /users/{}/friends/common/{}.", id, otherId);
+        return userService.getCommonFriends(id, otherId);
+    }
+
     public void clear() {
         userService.clearStorage();
     }
