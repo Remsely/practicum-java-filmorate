@@ -23,5 +23,5 @@ public interface UserStorage {
 
     void clear();
 
-    boolean containsUser(long id);
+    boolean notContainUser(long id);
 }

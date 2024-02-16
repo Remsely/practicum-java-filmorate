@@ -21,5 +21,5 @@ public interface FilmStorage {
 
     void clear();
 
-    boolean containsFilm(long id);
+    boolean notContainFilm(long id);
 }

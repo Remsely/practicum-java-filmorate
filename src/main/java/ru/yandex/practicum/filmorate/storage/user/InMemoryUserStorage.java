@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
@@ -26,12 +28,23 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User update(User user) {
         long id = user.getId();
+
+        if (this.notContainUser(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
+            );
+        }
         data.put(id, user);
         return user;
     }
 
     @Override
     public User get(long id) {
+        if (this.notContainUser(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
+            );
+        }
         return data.get(id);
     }
 
@@ -42,36 +55,44 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User addFriend(long id, long friendId) {
-        User requestUser = data.get(id);
-        User responseUser = data.get(friendId);
+        User user = this.get(id);
+        User friend = this.get(friendId);
 
-        requestUser.getFriends().add(friendId);
-        responseUser.getFriends().add(id);
-        return requestUser;
+        user.getFriends().add(friendId);
+        friend.getFriends().add(id);
+        return user;
     }
 
     @Override
     public User removeFriend(long id, long friendId) {
-        User requestUser = data.get(id);
-        User responseUser = data.get(friendId);
+        User user = this.get(id);
+        User friend = this.get(friendId);
 
-        requestUser.getFriends().remove(friendId);
-        responseUser.getFriends().remove(id);
-        return requestUser;
+        user.getFriends().remove(friendId);
+        friend.getFriends().remove(id);
+        return user;
     }
 
     @Override
     public List<User> getFriends(long id) {
-        return data.get(id).getFriends().stream()
+        User user = this.get(id);
+        return user.getFriends().stream()
                 .map(data::get)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
+    // Мне в голову пришла мысль, что этот метод должен находиться не здесь, а в service. Как будто storage должен
+    // отвечать только за простые действия по хранению. Т. е. лучше в service вызвать storage.getFriends для двух
+    // пользователей, а уже из этих данных выбрать общих друзей. Это так, или я слишком категорично отношусь к
+    // разделению функционала storage и service?
     @Override
     public List<User> getCommonFriends(long id, long otherId) {
-        Set<Long> commonFriends = new TreeSet<>(data.get(id).getFriends());
-        commonFriends.retainAll(data.get(otherId).getFriends());
+        User user = this.get(id);
+        User otherUser = this.get(otherId);
+
+        Set<Long> commonFriends = new TreeSet<>(user.getFriends());
+        commonFriends.retainAll(otherUser.getFriends());
         return commonFriends.stream()
                 .map(data::get)
                 .collect(Collectors.toList());
@@ -84,7 +105,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public boolean containsUser(long id) {
-        return data.containsKey(id);
+    public boolean notContainUser(long id) {
+        return !data.containsKey(id);
     }
 }

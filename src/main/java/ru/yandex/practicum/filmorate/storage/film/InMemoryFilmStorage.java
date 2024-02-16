@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.*;
@@ -26,27 +28,37 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film update(Film film) {
         long id = film.getId();
+        if (this.notContainFilm(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
+            );
+        }
         data.put(id, film);
         return film;
     }
 
     @Override
+    public Film get(long id) {
+        if (this.notContainFilm(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
+            );
+        }
+        return data.get(id);
+    }
+
+    @Override
     public Film addLike(long id, long userId) {
-        Film film = data.get(id);
+        Film film = this.get(id);
         film.getLikes().add(userId);
         return film;
     }
 
     @Override
     public Film removeLike(long id, long userId) {
-        Film film = data.get(id);
+        Film film = this.get(id);
         film.getLikes().remove(userId);
         return film;
-    }
-
-    @Override
-    public Film get(long id) {
-        return data.get(id);
     }
 
     @Override
@@ -69,7 +81,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public boolean containsFilm(long id) {
-        return data.containsKey(id);
+    public boolean notContainFilm(long id) {
+        return !data.containsKey(id);
     }
 }

@@ -26,20 +26,10 @@ public class FilmService {
     }
 
     public Film updateFilm(Film film) {
-        if (filmStorage.containsFilm(film.getId())) {
-            return filmStorage.update(film);
-        }
-        throw new EntityNotFoundException(
-                new ErrorResponse("Film id", "Не найден фильм с таким ID.")
-        );
+        return filmStorage.update(film);
     }
 
     public Film getFilm(long id) {
-        if (!filmStorage.containsFilm(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
-            );
-        }
         return filmStorage.get(id);
     }
 
@@ -48,12 +38,9 @@ public class FilmService {
     }
 
     public Film addLike(long id, long userId) {
-        if (!filmStorage.containsFilm(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
-            );
-        }
-        if (!userStorage.containsUser(userId)) {
+        // Мне кажется, что лучше убрать из зависимостей этого класса userStorage и добавить его в filmStorage. И уже
+        // там работать с исключениями. Правильная мысль?
+        if (userStorage.notContainUser(userId)) {
             throw new EntityNotFoundException(
                     new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
             );
@@ -62,12 +49,7 @@ public class FilmService {
     }
 
     public Film removeLike(long id, long userId) {
-        if (!filmStorage.containsFilm(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
-            );
-        }
-        if (!userStorage.containsUser(userId)) {
+        if (userStorage.notContainUser(userId)) {
             throw new EntityNotFoundException(
                     new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
             );
