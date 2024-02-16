@@ -10,6 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -24,8 +26,8 @@ public class UserControllerTest {
 
     @AfterEach
     public void clear() {
-        UserController userController = applicationContext.getBean(UserController.class);
-        userController.clear();
+        UserStorage userStorage = applicationContext.getBean(InMemoryUserStorage.class);
+        userStorage.clear();
     }
 
     @Test

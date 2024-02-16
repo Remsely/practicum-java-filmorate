@@ -62,8 +62,4 @@ public class FilmController {
         log.info("Получен GET-запрос к /films/popular?count={}.", count);
         return filmService.getPopular(count);
     }
-
-    public void clear() {
-        filmService.clearStorage();
-    }
 }

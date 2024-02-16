@@ -67,8 +67,4 @@ public class UserController {
         log.info("Получен GET-запрос к /users/{}/friends/common/{}.", id, otherId);
         return userService.getCommonFriends(id, otherId);
     }
-
-    public void clear() {
-        userService.clearStorage();
-    }
 }

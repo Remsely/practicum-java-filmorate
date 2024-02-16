@@ -10,6 +10,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -24,8 +28,10 @@ public class FilmControllerTest {
 
     @AfterEach
     public void clear() {
-        FilmController filmController = applicationContext.getBean(FilmController.class);
-        filmController.clear();
+        FilmStorage filmStorage = applicationContext.getBean(InMemoryFilmStorage.class);
+        filmStorage.clear();
+        UserStorage userStorage = applicationContext.getBean(InMemoryUserStorage.class);
+        userStorage.clear();
     }
 
     @Test
@@ -160,7 +166,7 @@ public class FilmControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{" +
                                 "\"name\":\"nisi eiusmod\"," +
-                                "\"description\":\"adipisicing\"," +
+                                "\"description\":\"adipisiciwefwefng\"," +
                                 "\"releaseDate\":\"1967-03-25\"," +
                                 "\"duration\":100" +
                                 "}"))
@@ -169,7 +175,7 @@ public class FilmControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get(FILMS_PATH)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].releaseDate").value("1967-03-25"))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].description").value("adipisicing"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].description").value("adipisiciwefwefng"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].name").value("nisi eiusmod"))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].duration").value(100));
     }

@@ -101,8 +101,4 @@ public class UserService {
         }
         return userStorage.getCommonFriends(id, otherId);
     }
-
-    public void clearStorage() {
-        userStorage.clear();
-    }
 }
