@@ -1,44 +1,70 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
-public class UserController extends AbstractController<User> {
+public class UserController {
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
     @PostMapping
-    public ResponseEntity<User> addUser(@Valid @RequestBody User user) {
+    public User addUser(@Valid @RequestBody User user) {
         log.info("Получен POST-запрос к /users. Тело запроса: {}", user);
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-        user.setId(currentId++);
-        data.put(user.getId(), user);
-        return ResponseEntity.ok(user);
+        return userService.addUser(user);
     }
 
     @PutMapping
-    public ResponseEntity<User> updateUser(@Valid @RequestBody User user) {
+    public User updateUser(@Valid @RequestBody User user) {
         log.info("Получен PUT-запрос к /users. Тело запроса: {}", user);
-        if (data.containsKey(user.getId())) {
-            data.put(user.getId(), user);
-            return ResponseEntity.ok(user);
-        }
-        log.warn("Пользователь с id {} не найден.", user.getId());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(user);
+        return userService.updateUser(user);
+    }
+
+    @GetMapping("/{id}")
+    public User getUser(@PathVariable long id) {
+        log.info("Получен GET-запрос к /users/{}.", id);
+        return userService.getUser(id);
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getUsers() {
+    public List<User> getUsers() {
         log.info("Получен GET-запрос к /users.");
-        return ResponseEntity.ok(new ArrayList<>(data.values()));
+        return userService.getAllUsers();
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public User putFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.info("Получен PUT-запрос к /users/{}/friends/{}. {} ", id, friendId, userService.getUser(id));
+        return userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public User deleteFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.info("Получен DELETE-запрос к /users/{}/friends/{}.", id, friendId);
+        return userService.removeFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> getFriends(@PathVariable long id) {
+        log.info("Получен GET-запрос к /users/{}/friends.", id);
+        return userService.getFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
+        log.info("Получен GET-запрос к /users/{}/friends/common/{}.", id, otherId);
+        return userService.getCommonFriends(id, otherId);
     }
 }
