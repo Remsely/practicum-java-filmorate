@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
@@ -16,7 +17,8 @@ public class FilmService {
     private final UserStorage userStorage;
 
     @Autowired
-    public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("userDbStorage") UserStorage userStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
     }
@@ -38,8 +40,6 @@ public class FilmService {
     }
 
     public Film addLike(long id, long userId) {
-        // Мне кажется, что лучше убрать из зависимостей этого класса userStorage и добавить его в filmStorage. И уже
-        // там работать с исключениями. Правильная мысль?
         if (userStorage.notContainUser(userId)) {
             throw new EntityNotFoundException(
                     new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))

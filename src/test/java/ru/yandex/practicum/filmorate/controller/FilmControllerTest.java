@@ -1,38 +1,23 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class FilmControllerTest {
     private static final String FILMS_PATH = "/films";
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private ApplicationContext applicationContext;
-
-    @AfterEach
-    public void clear() {
-        FilmStorage filmStorage = applicationContext.getBean(InMemoryFilmStorage.class);
-        filmStorage.clear();
-        UserStorage userStorage = applicationContext.getBean(InMemoryUserStorage.class);
-        userStorage.clear();
-    }
 
     @Test
     public void testCreateFilm() throws Exception {
