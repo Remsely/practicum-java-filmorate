@@ -7,5 +7,7 @@ import java.util.List;
 public interface MPAStorage {
     MPA get(long id);
 
-    List<MPA> get();
+    List<MPA> getAll();
+
+    boolean notContainMPA(long id);
 }

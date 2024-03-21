@@ -77,52 +77,52 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User addFriend(long id, long friendId) {
-        if (this.notContainUser(id)) {
+    public User addFriend(long followerId, long targetId) {
+        if (this.notContainUser(followerId)) {
             throw new EntityNotFoundException(
-                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
+                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", followerId))
             );
         }
-        if (this.notContainUser(friendId)) {
+        if (this.notContainUser(targetId)) {
             throw new EntityNotFoundException(
-                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", friendId))
+                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", targetId))
             );
         }
-        if (containsFriendApproval(id, friendId, false)) {
+        if (containsFriendApproval(followerId, targetId, false)) {
             String sqlQuery = "update follows set approved = ? where target_id = ? and follower_id = ?";
-            jdbcTemplate.update(sqlQuery, true, id, friendId);
+            jdbcTemplate.update(sqlQuery, true, followerId, targetId);
         } else {
             String sqlQuery = "insert into follows (target_id, follower_id, approved) values (?, ?, ?)";
-            jdbcTemplate.update(sqlQuery, friendId, id, false);
+            jdbcTemplate.update(sqlQuery, targetId, followerId, false);
         }
-        return this.get(id);
+        return this.get(followerId);
     }
 
 
     @Override
-    public User removeFriend(long id, long friendId) {
-        if (this.notContainUser(id)) {
+    public User removeFriend(long followerId, long targetId) {
+        if (this.notContainUser(followerId)) {
             throw new EntityNotFoundException(
-                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
+                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", followerId))
             );
         }
-        if (this.notContainUser(friendId)) {
+        if (this.notContainUser(targetId)) {
             throw new EntityNotFoundException(
-                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", friendId))
+                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", targetId))
             );
         }
-        if (containsFriendApproval(id, friendId, true)) {
+        if (containsFriendApproval(followerId, targetId, true)) {
             String sqlQuery = "delete from follows where target_id = ? and follower_id = ?";
-            jdbcTemplate.update(sqlQuery, id, friendId);
-            this.addFriend(friendId, id);
-        } else if (containsFriendApproval(friendId, id, true)) {
+            jdbcTemplate.update(sqlQuery, followerId, targetId);
+            this.addFriend(targetId, followerId);
+        } else if (containsFriendApproval(targetId, followerId, true)) {
             String sqlQuery = "update follows set approved = ? where target_id = ? and follower_id = ?";
-            jdbcTemplate.update(sqlQuery, false, friendId, id);
-        } else if (containsFriendApproval(friendId, id, false)) {
+            jdbcTemplate.update(sqlQuery, false, targetId, followerId);
+        } else if (containsFriendApproval(targetId, followerId, false)) {
             String sqlQuery = "delete from follows where target_id = ? and follower_id = ?";
-            jdbcTemplate.update(sqlQuery, friendId, id);
+            jdbcTemplate.update(sqlQuery, targetId, followerId);
         }
-        return this.get(id);
+        return this.get(followerId);
     }
 
     @Override
@@ -147,24 +147,6 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id, id);
     }
 
-    private Set<Long> getFriendsIds(long id) {
-        String sqlQuery = "select user_id " +
-                "from USERS " +
-                "where USER_ID in ( " +
-                "select FOLLOWER_ID " +
-                "from FOLLOWS " +
-                "where target_id = ? and APPROVED = true " +
-                ") " +
-                "or USER_ID in ( " +
-                "select TARGET_ID " +
-                "from FOLLOWS " +
-                "where FOLLOWER_ID = ? " +
-                ")";
-        return new HashSet<>(jdbcTemplate.query(sqlQuery,
-                (rs, rowNum) -> rs.getLong("user_id"),
-                id, id));
-    }
-
     @Override
     public List<User> getCommonFriends(long id, long otherId) {
         if (this.notContainUser(id)) {
@@ -187,6 +169,24 @@ public class UserDbStorage implements UserStorage {
         String sqlQuery = "select count(*) from USERS where USER_ID = ?";
         Integer count = jdbcTemplate.queryForObject(sqlQuery, Integer.class, id);
         return count != null && count == 0;
+    }
+
+    private Set<Long> getFriendsIds(long id) {
+        String sqlQuery = "select user_id " +
+                "from USERS " +
+                "where USER_ID in ( " +
+                "select FOLLOWER_ID " +
+                "from FOLLOWS " +
+                "where target_id = ? and APPROVED = true " +
+                ") " +
+                "or USER_ID in ( " +
+                "select TARGET_ID " +
+                "from FOLLOWS " +
+                "where FOLLOWER_ID = ? " +
+                ")";
+        return new HashSet<>(jdbcTemplate.query(sqlQuery,
+                (rs, rowNum) -> rs.getLong("user_id"),
+                id, id));
     }
 
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {

@@ -36,12 +36,12 @@ public class UserService {
         return userStorage.getAll();
     }
 
-    public User addFriend(long id, long friendId) {
-        return userStorage.addFriend(id, friendId);
+    public User addFriend(long followerId, long targetId) {
+        return userStorage.addFriend(followerId, targetId);
     }
 
-    public User removeFriend(long id, long friendId) {
-        return userStorage.removeFriend(id, friendId);
+    public User removeFriend(long followerId, long targetId) {
+        return userStorage.removeFriend(followerId, targetId);
     }
 
     public List<User> getFriends(long id) {
