@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.Builder;
 import lombok.Data;
 
 import javax.validation.constraints.Email;
@@ -8,9 +9,9 @@ import javax.validation.constraints.PastOrPresent;
 import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
 import java.util.Set;
-import java.util.TreeSet;
 
 @Data
+@Builder
 public class User {
     private long id;
 
@@ -26,5 +27,5 @@ public class User {
     @PastOrPresent(message = "Дата рождения не может быть в будущем.")
     private LocalDate birthday;
 
-    private Set<Long> friends = new TreeSet<>();
+    private Set<Long> friends;
 }

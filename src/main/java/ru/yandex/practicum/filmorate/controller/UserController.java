@@ -47,7 +47,10 @@ public class UserController {
     @PutMapping("/{id}/friends/{friendId}")
     public User putFriend(@PathVariable long id, @PathVariable long friendId) {
         log.info("Получен PUT-запрос к /users/{}/friends/{}. {} ", id, friendId, userService.getUser(id));
-        return userService.addFriend(id, friendId);
+        User user = userService.addFriend(id, friendId);
+        log.info("{} ", userService.getUser(id));
+        log.info("{} ", userService.getUser(friendId));
+        return user;
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")

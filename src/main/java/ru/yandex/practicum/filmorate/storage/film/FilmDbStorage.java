@@ -86,8 +86,8 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getAll() {
-        String filmSqlQuery = "select * from films";
-        return jdbcTemplate.query(filmSqlQuery, this::mapRowToFilm);
+        String sqlQuery = "select * from films";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm);
     }
 
     @Override
@@ -116,14 +116,14 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopular(int count) {
-        String filmSqlQuery = "select f.* " +
+        String sqlQuery = "select f.* " +
                 "from FILMS as f " +
                 "join (select FILM_ID, count(*) as like_count " +
                 "from LIKES " +
                 "group by FILM_ID " +
                 "order by like_count desc " +
                 "limit ?) l on f.FILM_ID = l.FILM_ID";
-        return jdbcTemplate.query(filmSqlQuery, this::mapRowToFilm, count);
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, count);
     }
 
     @Override
@@ -133,8 +133,8 @@ public class FilmDbStorage implements FilmStorage {
                     new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
             );
         }
-        String filmSqlQuery = "select user_id from likes where film_id = ?";
-        return (new HashSet<>(jdbcTemplate.query(filmSqlQuery, (rs, rowNum) -> rs.getLong("user_id"), id)));
+        String sqlQuery = "select user_id from likes where film_id = ?";
+        return (new HashSet<>(jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getLong("user_id"), id)));
     }
 
     @Override

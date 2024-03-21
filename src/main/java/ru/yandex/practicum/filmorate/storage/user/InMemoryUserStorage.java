@@ -56,20 +56,14 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User addFriend(long id, long friendId) {
         User user = this.get(id);
-        User friend = this.get(friendId);
-
         user.getFriends().add(friendId);
-        friend.getFriends().add(id);
         return user;
     }
 
     @Override
     public User removeFriend(long id, long friendId) {
         User user = this.get(id);
-        User friend = this.get(friendId);
-
         user.getFriends().remove(friendId);
-        friend.getFriends().remove(id);
         return user;
     }
 
