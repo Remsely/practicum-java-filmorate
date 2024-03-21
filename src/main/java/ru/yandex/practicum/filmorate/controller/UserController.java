@@ -44,19 +44,16 @@ public class UserController {
         return userService.getAllUsers();
     }
 
-    @PutMapping("/{followerId}/friends/{targetId}")
-    public User putFriend(@PathVariable long followerId, @PathVariable long targetId) {
-        log.info("Получен PUT-запрос к /users/{}/friends/{}. {} ", followerId, targetId, userService.getUser(followerId));
-        User user = userService.addFriend(followerId, targetId);
-        log.info("{} ", userService.getUser(followerId));
-        log.info("{} ", userService.getUser(targetId));
-        return user;
+    @PutMapping("/{id}/friends/{followerId}")
+    public User putFriend(@PathVariable long id, @PathVariable long followerId) {
+        log.info("Получен PUT-запрос к /users/{}/friends/{}. {} ", id, followerId, userService.getUser(id));
+        return userService.addFriend(id, followerId);
     }
 
-    @DeleteMapping("/{followerId}/friends/{targetId}")
-    public User deleteFriend(@PathVariable long followerId, @PathVariable long targetId) {
-        log.info("Получен DELETE-запрос к /users/{}/friends/{}.", followerId, targetId);
-        return userService.removeFriend(followerId, targetId);
+    @DeleteMapping("/{id}/friends/{followerId}")
+    public User deleteFriend(@PathVariable long id, @PathVariable long followerId) {
+        log.info("Получен DELETE-запрос к /users/{}/friends/{}.", id, followerId);
+        return userService.removeFriend(id, followerId);
     }
 
     @GetMapping("/{id}/friends")

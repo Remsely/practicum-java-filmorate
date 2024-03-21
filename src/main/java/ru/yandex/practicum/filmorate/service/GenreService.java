@@ -16,11 +16,11 @@ public class GenreService {
         this.genreStorage = genreStorage;
     }
 
-    public Genre get(long id) {
+    public Genre getGenre(long id) {
         return genreStorage.get(id);
     }
 
-    public List<Genre> getAll() {
+    public List<Genre> getAllGenres() {
         return genreStorage.getAll();
     }
 }

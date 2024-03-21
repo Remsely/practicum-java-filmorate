@@ -118,11 +118,12 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getPopular(int count) {
         String sqlQuery = "select f.* " +
                 "from FILMS as f " +
-                "join (select FILM_ID, count(*) as like_count " +
+                "left join (select FILM_ID, count(*) as like_count " +
                 "from LIKES " +
                 "group by FILM_ID " +
-                "order by like_count desc " +
-                "limit ?) l on f.FILM_ID = l.FILM_ID";
+                ") l on f.FILM_ID = l.FILM_ID " +
+                "order by l.like_count desc " +
+                "limit ?";
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, count);
     }
 
