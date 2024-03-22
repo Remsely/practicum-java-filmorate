@@ -25,7 +25,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User add(User user) {
-        String sqlQuery = "insert into users (name, login, email, birthday) values (?, ?, ?, ?)";
+        String sqlQuery = "INSERT INTO users (name, login, email, birthday) VALUES (?, ?, ?, ?);";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -51,7 +51,7 @@ public class UserDbStorage implements UserStorage {
                     new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
             );
         }
-        String sqlQuery = "update USERS set name = ?, LOGIN = ?, EMAIL = ?, BIRTHDAY = ? where USER_ID = ?";
+        String sqlQuery = "UPDATE users SET name = ?, login = ?, email = ?, birthday = ? WHERE user_id = ?";
         jdbcTemplate.update(sqlQuery,
                 user.getName(),
                 user.getLogin(),
@@ -68,14 +68,14 @@ public class UserDbStorage implements UserStorage {
                     new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
             );
         }
-        String filmSqlQuery = "select * from USERS where USER_ID = ?";
+        String filmSqlQuery = "SELECT * FROM users WHERE user_id = ?";
         return jdbcTemplate.queryForObject(filmSqlQuery, this::mapRowToUser, id);
     }
 
 
     @Override
     public List<User> getAll() {
-        String sqlQuery = "select * from users";
+        String sqlQuery = "SELECT * FROM users";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser);
     }
 
@@ -92,10 +92,10 @@ public class UserDbStorage implements UserStorage {
             );
         }
         if (containsFriendApproval(followerId, id, false)) {
-            String sqlQuery = "update follows set approved = ? where target_id = ? and follower_id = ?";
+            String sqlQuery = "UPDATE follows SET approved = ? WHERE target_id = ? AND follower_id = ?";
             jdbcTemplate.update(sqlQuery, true, followerId, id);
         } else {
-            String sqlQuery = "insert into follows (target_id, follower_id, approved) values (?, ?, ?)";
+            String sqlQuery = "INSERT INTO follows (target_id, follower_id, approved) VALUES (?, ?, ?)";
             jdbcTemplate.update(sqlQuery, id, followerId, false);
         }
         return this.get(id);
@@ -115,14 +115,14 @@ public class UserDbStorage implements UserStorage {
             );
         }
         if (containsFriendApproval(followerId, id, true)) {
-            String sqlQuery = "delete from follows where target_id = ? and follower_id = ?";
+            String sqlQuery = "DELETE FROM follows WHERE target_id = ? AND follower_id = ?";
             jdbcTemplate.update(sqlQuery, followerId, id);
             this.addFriend(id, followerId);
         } else if (containsFriendApproval(id, followerId, true)) {
-            String sqlQuery = "update follows set approved = ? where target_id = ? and follower_id = ?";
+            String sqlQuery = "UPDATE follows SET approved = ? WHERE target_id = ? AND follower_id = ?";
             jdbcTemplate.update(sqlQuery, false, id, followerId);
         } else if (containsFriendApproval(id, followerId, false)) {
-            String sqlQuery = "delete from follows where target_id = ? and follower_id = ?";
+            String sqlQuery = "DELETE FROM follows WHERE target_id = ? AND follower_id = ?";
             jdbcTemplate.update(sqlQuery, id, followerId);
         }
         return this.get(id);
@@ -136,19 +136,18 @@ public class UserDbStorage implements UserStorage {
             );
         }
         String sqlQuery =
-                "select * " +
-                        "from USERS " +
-                        "where USER_ID in ( " +
-                        "    select target_id " +
-                        "    from FOLLOWS " +
-                        "    where FOLLOWER_ID = ? " +
-                        "      and APPROVED = true " +
-                        "    ) " +
-                        "   or USER_ID in ( " +
-                        "    select follower_id " +
-                        "    from FOLLOWS " +
-                        "    where target_id = ? " +
-                        "    )";
+                "SELECT * " +
+                        "FROM users " +
+                        "WHERE user_id IN ( " +
+                        "    SELECT target_id " +
+                        "    FROM follows " +
+                        "    WHERE follower_id = ? " +
+                        "      AND approved = true " +
+                        ") OR user_id IN ( " +
+                        "    SELECT follower_id " +
+                        "    FROM follows " +
+                        "    WHERE target_id = ? " +
+                        ")";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id, id);
     }
 
@@ -165,33 +164,35 @@ public class UserDbStorage implements UserStorage {
             );
         }
         String sqlQuery =
-                "select u1.USER_ID, u1.EMAIL, u1.LOGIN, u1.BIRTHDAY, u1.NAME " +
-                        "from (select * " +
-                        "      from USERS " +
-                        "      where USER_ID in ( " +
-                        "          select target_id " +
-                        "          from FOLLOWS " +
-                        "          where FOLLOWER_ID = ? " +
-                        "            and APPROVED = true " +
-                        "          ) " +
-                        "         or USER_ID in ( " +
-                        "          select follower_id " +
-                        "          from FOLLOWS " +
-                        "          where target_id = ? " +
-                        "          )) as u1 " +
-                        "         inner join (select * " +
-                        "                     from USERS " +
-                        "                     where USER_ID in ( " +
-                        "                         select target_id " +
-                        "                         from FOLLOWS " +
-                        "                         where FOLLOWER_ID = ? " +
-                        "                           and APPROVED = true " +
-                        "                         ) " +
-                        "                        or USER_ID in ( " +
-                        "                         select follower_id " +
-                        "                         from FOLLOWS " +
-                        "                         where target_id = ? " +
-                        "                         )) as u2 on u1.USER_ID = u2.USER_ID";
+                "SELECT u1.user_id, u1.email, u1.login, u1.birthday, u1.name " +
+                        "FROM ( " +
+                        "    SELECT * " +
+                        "    FROM users " +
+                        "    WHERE user_id IN ( " +
+                        "        SELECT target_id " +
+                        "        FROM follows " +
+                        "        WHERE follower_id = ? " +
+                        "          AND approved = TRUE " +
+                        "    ) OR user_id IN ( " +
+                        "        SELECT follower_id " +
+                        "        FROM follows " +
+                        "        WHERE target_id = ? " +
+                        "    ) " +
+                        ") AS u1 " +
+                        "INNER JOIN ( " +
+                        "    SELECT * " +
+                        "    FROM users " +
+                        "    WHERE user_id IN ( " +
+                        "        SELECT target_id " +
+                        "        FROM follows " +
+                        "        WHERE follower_id = ? " +
+                        "          AND approved = TRUE " +
+                        "    ) OR user_id IN ( " +
+                        "        SELECT follower_id " +
+                        "        FROM follows " +
+                        "        WHERE target_id = ? " +
+                        "    ) " +
+                        ") AS u2 ON u1.user_id = u2.user_id";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id, id, otherId, otherId);
     }
 
@@ -204,19 +205,18 @@ public class UserDbStorage implements UserStorage {
 
     private Set<Long> getFriendsIds(long id) {
         String sqlQuery =
-                "select USER_ID " +
-                        "from USERS " +
-                        "where USER_ID in ( " +
-                        "    select target_id " +
-                        "    from FOLLOWS " +
-                        "    where FOLLOWER_ID = ? " +
-                        "      and APPROVED = true " +
-                        "    ) " +
-                        "   or USER_ID in ( " +
-                        "    select follower_id " +
-                        "    from FOLLOWS " +
-                        "    where target_id = ? " +
-                        "    )";
+                "SELECT user_id " +
+                        "FROM users " +
+                        "WHERE user_id IN ( " +
+                        "    SELECT target_id " +
+                        "    FROM follows " +
+                        "    WHERE follower_id = ? " +
+                        "      AND approved = TRUE " +
+                        ") OR user_id IN ( " +
+                        "    SELECT follower_id " +
+                        "    FROM follows " +
+                        "    WHERE target_id = ? " +
+                        ")";
         return new HashSet<>(jdbcTemplate.query(sqlQuery,
                 (rs, rowNum) -> rs.getLong("user_id"),
                 id, id));
@@ -235,7 +235,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     private boolean containsFriendApproval(long targetId, long friendId, boolean approved) {
-        String sqlQuery = "select count(*) from follows where target_id = ? and follower_id = ? and approved = ?";
+        String sqlQuery = "SELECT COUNT(*) FROM follows WHERE target_id = ? AND follower_id = ? AND approved = ?";
         Integer count = jdbcTemplate.queryForObject(sqlQuery, Integer.class, targetId, friendId, approved);
         return count != null && count == 1;
     }
