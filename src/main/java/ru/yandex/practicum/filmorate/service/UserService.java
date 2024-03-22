@@ -1,18 +1,21 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class UserService {
     private final UserStorage userStorage;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -20,34 +23,54 @@ public class UserService {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        return userStorage.add(user);
+        User savedUser = userStorage.add(user);
+        log.info("Пользователь добавлен. User: {}", savedUser);
+        return savedUser;
     }
 
     public User updateUser(User user) {
-        return userStorage.update(user);
+        User savedUser = userStorage.update(user);
+        log.info("Данные пользователя обновлены. User: {}", savedUser);
+        return savedUser;
     }
 
     public User getUser(long id) {
-        return userStorage.get(id);
+        User user = userStorage.get(id);
+        log.info("Получен пользователь с id {}. User: {}", id, user);
+        return user;
     }
 
     public List<User> getAllUsers() {
-        return userStorage.getAll();
+        List<User> users = userStorage.getAll();
+        log.info("Получен список всех пользователей. List<User>: {}", users);
+        return users;
     }
 
-    public User addFriend(long id, long friendId) {
-        return userStorage.addFriend(id, friendId);
+    public User addFriend(long id, long followerId) {
+        User user = userStorage.addFriend(id, followerId);
+        log.info("Сохранена заявка на добавление в друзья пользователю с id {} от пользователя с id {}. " +
+                        "User (id: {}): {}",
+                id, followerId, id, user);
+        return user;
     }
 
-    public User removeFriend(long id, long friendId) {
-        return userStorage.removeFriend(id, friendId);
+    public User removeFriend(long id, long followerId) {
+        User user = userStorage.removeFriend(id, followerId);
+        log.info("Удалена заявка на добавление в друзья пользователю с id {} от пользователя с id {}. " +
+                        "User (id: {}): {}",
+                id, followerId, id, user);
+        return user;
     }
 
     public List<User> getFriends(long id) {
-        return userStorage.getFriends(id);
+        List<User> friends = userStorage.getFriends(id);
+        log.info("Получен список всех друзей пользователя с id {}. List<User>: {}", id, friends);
+        return friends;
     }
 
     public List<User> getCommonFriends(long id, long otherId) {
-        return userStorage.getCommonFriends(id, otherId);
+        List<User> friends = userStorage.getCommonFriends(id, otherId);
+        log.info("Получен список общих друзей пользователей с id {} и {}. List<User>: {}", id, otherId, friends);
+        return friends;
     }
 }

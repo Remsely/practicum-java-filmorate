@@ -21,7 +21,5 @@ public interface UserStorage {
 
     List<User> getCommonFriends(long id, long otherId);
 
-    void clear();
-
     boolean notContainUser(long id);
 }

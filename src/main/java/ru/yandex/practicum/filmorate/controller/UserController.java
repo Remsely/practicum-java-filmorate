@@ -44,16 +44,16 @@ public class UserController {
         return userService.getAllUsers();
     }
 
-    @PutMapping("/{id}/friends/{friendId}")
-    public User putFriend(@PathVariable long id, @PathVariable long friendId) {
-        log.info("Получен PUT-запрос к /users/{}/friends/{}. {} ", id, friendId, userService.getUser(id));
-        return userService.addFriend(id, friendId);
+    @PutMapping("/{id}/friends/{followerId}")
+    public User putFriend(@PathVariable long id, @PathVariable long followerId) {
+        log.info("Получен PUT-запрос к /users/{}/friends/{}. {} ", id, followerId, userService.getUser(id));
+        return userService.addFriend(id, followerId);
     }
 
-    @DeleteMapping("/{id}/friends/{friendId}")
-    public User deleteFriend(@PathVariable long id, @PathVariable long friendId) {
-        log.info("Получен DELETE-запрос к /users/{}/friends/{}.", id, friendId);
-        return userService.removeFriend(id, friendId);
+    @DeleteMapping("/{id}/friends/{followerId}")
+    public User deleteFriend(@PathVariable long id, @PathVariable long followerId) {
+        log.info("Получен DELETE-запрос к /users/{}/friends/{}.", id, followerId);
+        return userService.removeFriend(id, followerId);
     }
 
     @GetMapping("/{id}/friends")

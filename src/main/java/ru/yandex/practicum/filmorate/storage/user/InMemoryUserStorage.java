@@ -56,20 +56,14 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User addFriend(long id, long friendId) {
         User user = this.get(id);
-        User friend = this.get(friendId);
-
         user.getFriends().add(friendId);
-        friend.getFriends().add(id);
         return user;
     }
 
     @Override
     public User removeFriend(long id, long friendId) {
         User user = this.get(id);
-        User friend = this.get(friendId);
-
         user.getFriends().remove(friendId);
-        friend.getFriends().remove(id);
         return user;
     }
 
@@ -82,10 +76,6 @@ public class InMemoryUserStorage implements UserStorage {
                 .collect(Collectors.toList());
     }
 
-    // Мне в голову пришла мысль, что этот метод должен находиться не здесь, а в service. Как будто storage должен
-    // отвечать только за простые действия по хранению. Т. е. лучше в service вызвать storage.getFriends для двух
-    // пользователей, а уже из этих данных выбрать общих друзей. Это так, или я слишком категорично отношусь к
-    // разделению функционала storage и service?
     @Override
     public List<User> getCommonFriends(long id, long otherId) {
         User user = this.get(id);
@@ -96,12 +86,6 @@ public class InMemoryUserStorage implements UserStorage {
         return commonFriends.stream()
                 .map(data::get)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public void clear() {
-        currentId = 1;
-        data.clear();
     }
 
     @Override
