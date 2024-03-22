@@ -61,8 +61,14 @@ public class FilmDbStorage implements FilmStorage {
                     new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
             );
         }
-        String sqlQuery = "update films set name = ?, description = ?, rating_id = ?, release = ?, duration = ? " +
-                "where film_id = ?";
+        String sqlQuery =
+                "update films " +
+                        "set name        = ?, " +
+                        "    description = ?, " +
+                        "    rating_id   = ?, " +
+                        "    release     = ?, " +
+                        "    duration    = ? " +
+                        "where film_id = ?";
         jdbcTemplate.update(sqlQuery,
                 film.getName(),
                 film.getDescription(),
@@ -116,14 +122,14 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopular(int count) {
-        String sqlQuery = "select f.* " +
-                "from FILMS as f " +
-                "left join (select FILM_ID, count(*) as like_count " +
-                "from LIKES " +
-                "group by FILM_ID " +
-                ") l on f.FILM_ID = l.FILM_ID " +
-                "order by l.like_count desc " +
-                "limit ?";
+        String sqlQuery =
+                "select f.* " +
+                        "from FILMS as f " +
+                        "         left join (select FILM_ID, count(*) as like_count " +
+                        "                    from LIKES " +
+                        "                    group by FILM_ID) l on f.FILM_ID = l.FILM_ID " +
+                        "order by l.like_count desc " +
+                        "limit ?";
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, count);
     }
 

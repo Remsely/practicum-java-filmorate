@@ -13,7 +13,10 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Component
@@ -132,18 +135,20 @@ public class UserDbStorage implements UserStorage {
                     new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
             );
         }
-        String sqlQuery = "select * " +
-                "from USERS " +
-                "where USER_ID in ( " +
-                "select target_id " +
-                "from FOLLOWS " +
-                "where FOLLOWER_ID = ? and APPROVED = true " +
-                ") " +
-                "or USER_ID in ( " +
-                "select follower_id " +
-                "from FOLLOWS " +
-                "where target_id = ? " +
-                ")";
+        String sqlQuery =
+                "select * " +
+                        "from USERS " +
+                        "where USER_ID in ( " +
+                        "    select target_id " +
+                        "    from FOLLOWS " +
+                        "    where FOLLOWER_ID = ? " +
+                        "      and APPROVED = true " +
+                        "    ) " +
+                        "   or USER_ID in ( " +
+                        "    select follower_id " +
+                        "    from FOLLOWS " +
+                        "    where target_id = ? " +
+                        "    )";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id, id);
     }
 
@@ -159,9 +164,35 @@ public class UserDbStorage implements UserStorage {
                     new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", otherId))
             );
         }
-        Set<User> commonFriends = new HashSet<>(this.getFriends(id));
-        commonFriends.retainAll(this.getFriends(otherId));
-        return new ArrayList<>(commonFriends);
+        String sqlQuery =
+                "select u1.USER_ID, u1.EMAIL, u1.LOGIN, u1.BIRTHDAY, u1.NAME " +
+                        "from (select * " +
+                        "      from USERS " +
+                        "      where USER_ID in ( " +
+                        "          select target_id " +
+                        "          from FOLLOWS " +
+                        "          where FOLLOWER_ID = ? " +
+                        "            and APPROVED = true " +
+                        "          ) " +
+                        "         or USER_ID in ( " +
+                        "          select follower_id " +
+                        "          from FOLLOWS " +
+                        "          where target_id = ? " +
+                        "          )) as u1 " +
+                        "         inner join (select * " +
+                        "                     from USERS " +
+                        "                     where USER_ID in ( " +
+                        "                         select target_id " +
+                        "                         from FOLLOWS " +
+                        "                         where FOLLOWER_ID = ? " +
+                        "                           and APPROVED = true " +
+                        "                         ) " +
+                        "                        or USER_ID in ( " +
+                        "                         select follower_id " +
+                        "                         from FOLLOWS " +
+                        "                         where target_id = ? " +
+                        "                         )) as u2 on u1.USER_ID = u2.USER_ID";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id, id, otherId, otherId);
     }
 
     @Override
@@ -172,18 +203,20 @@ public class UserDbStorage implements UserStorage {
     }
 
     private Set<Long> getFriendsIds(long id) {
-        String sqlQuery = "select USER_ID " +
-                "from USERS " +
-                "where USER_ID in ( " +
-                "select target_id " +
-                "from FOLLOWS " +
-                "where FOLLOWER_ID = ? and APPROVED = true " +
-                ") " +
-                "or USER_ID in ( " +
-                "select follower_id " +
-                "from FOLLOWS " +
-                "where target_id = ? " +
-                ")";
+        String sqlQuery =
+                "select USER_ID " +
+                        "from USERS " +
+                        "where USER_ID in ( " +
+                        "    select target_id " +
+                        "    from FOLLOWS " +
+                        "    where FOLLOWER_ID = ? " +
+                        "      and APPROVED = true " +
+                        "    ) " +
+                        "   or USER_ID in ( " +
+                        "    select follower_id " +
+                        "    from FOLLOWS " +
+                        "    where target_id = ? " +
+                        "    )";
         return new HashSet<>(jdbcTemplate.query(sqlQuery,
                 (rs, rowNum) -> rs.getLong("user_id"),
                 id, id));
