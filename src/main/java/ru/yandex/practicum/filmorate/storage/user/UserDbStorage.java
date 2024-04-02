@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
@@ -194,6 +195,12 @@ public class UserDbStorage implements UserStorage {
                         "    ) " +
                         ") AS u2 ON u1.user_id = u2.user_id";
         return jdbcTemplate.query(sqlQuery, this::mapRowToUser, id, id, otherId, otherId);
+    }
+
+    @Override
+    public List<Long> getLikes(long id){
+        String sql = "select * from likes where user_id = ?";
+       return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("film_id"),id);
     }
 
     @Override
