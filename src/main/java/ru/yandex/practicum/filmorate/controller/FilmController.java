@@ -61,10 +61,11 @@ public class FilmController {
         log.info("Получен GET-запрос к /films/popular?count={}.", count);
         return filmService.getPopular(count);
     }
+
     @GetMapping("/common")
-    public List<Film> getCommonFilms(@RequestParam(value = "userId",required = false) long userId,@RequestParam(value = "friendId",required = false) long friendId){
-        log.info("Получен GET-запрос к /films/common?userId={}&friendId={}.", userId,friendId);
-        return filmService.getCommonFilm(userId,userId);
+    public List<Film> getCommonFilms(@RequestParam(value = "userId", required = false) long userId, @RequestParam(value = "friendId", required = false) long friendId) {
+        log.info("Получен GET-запрос к /films/common?userId={}&friendId={}.", userId, friendId);
+        return filmService.getCommonFilm(userId, userId);
     }
 
 }

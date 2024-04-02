@@ -77,9 +77,10 @@ public class FilmService {
         log.info("Получен список {} самых популярных фильмов. List<Film>: {}", count, films);
         return films;
     }
-    public List<Film> getCommonFilm(long userId,long friendId){
-            List<Long> likeUser = userStorage.getLikes(userId);
-            List<Long> friendUser = userStorage.getLikes(friendId);
+
+    public List<Film> getCommonFilm(long userId, long friendId) {
+        List<Long> likeUser = userStorage.getLikes(userId);
+        List<Long> friendUser = userStorage.getLikes(friendId);
         return likeUser.stream()
                 .filter(friendUser::contains)
                 .map(this::getFilm)
