@@ -6,6 +6,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.exception.FilmAttributeNotExistOnFilmCreationException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
@@ -26,9 +27,16 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film add(Film film) {
-        String sqlQuery = "INSERT INTO films (name, description, rating_id, release, duration) VALUES (?, ?, ?, ?, ?)";
+        String sqlQuery = "INSERT INTO film (name, description, rating_id, release, duration) VALUES (?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        long mpaId = film.getMpa().getId();
+        if (mpaStorage.notContainMPA(mpaId)) {
+            throw new FilmAttributeNotExistOnFilmCreationException(
+                    new ErrorResponse("MPA id", String.format("Не найден MPA с ID: %d.", mpaId))
+            );
+        }
 
         jdbcTemplate.update(connection -> {
                     PreparedStatement statement = connection.prepareStatement(sqlQuery, new String[]{"film_id"});
@@ -62,7 +70,7 @@ public class FilmDbStorage implements FilmStorage {
             );
         }
         String sqlQuery =
-                "UPDATE films " +
+                "UPDATE film " +
                         "SET name = ?, " +
                         "    description = ?, " +
                         "    rating_id = ?, " +
@@ -86,13 +94,13 @@ public class FilmDbStorage implements FilmStorage {
                     new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
             );
         }
-        String filmSqlQuery = "SELECT * FROM films WHERE film_id = ?";
+        String filmSqlQuery = "SELECT * FROM film WHERE film_id = ?";
         return jdbcTemplate.queryForObject(filmSqlQuery, this::mapRowToFilm, id);
     }
 
     @Override
     public List<Film> getAll() {
-        String sqlQuery = "SELECT * FROM films";
+        String sqlQuery = "SELECT * FROM film";
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm);
     }
 
@@ -103,7 +111,7 @@ public class FilmDbStorage implements FilmStorage {
                     new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
             );
         }
-        String sqlQuery = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
+        String sqlQuery = "INSERT INTO like_film (film_id, user_id) VALUES (?, ?)";
         jdbcTemplate.update(sqlQuery, id, userId);
         return this.get(id);
     }
@@ -115,7 +123,7 @@ public class FilmDbStorage implements FilmStorage {
                     new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
             );
         }
-        String sqlQuery = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
+        String sqlQuery = "DELETE FROM like_film WHERE film_id = ? AND user_id = ?";
         jdbcTemplate.update(sqlQuery, id, userId);
         return this.get(id);
     }
@@ -124,10 +132,10 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getPopular(int count) {
         String sqlQuery =
                 "SELECT f.* " +
-                        "FROM films AS f " +
+                        "FROM film AS f " +
                         "LEFT JOIN ( " +
                         "    SELECT film_id, COUNT(*) AS like_count " +
-                        "    FROM likes " +
+                        "    FROM like_film " +
                         "    GROUP BY film_id " +
                         ") l ON f.film_id = l.film_id " +
                         "ORDER BY l.like_count DESC " +
@@ -142,13 +150,13 @@ public class FilmDbStorage implements FilmStorage {
                     new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
             );
         }
-        String sqlQuery = "SELECT user_id FROM likes WHERE film_id = ?";
+        String sqlQuery = "SELECT user_id FROM like_film WHERE film_id = ?";
         return (new HashSet<>(jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getLong("user_id"), id)));
     }
 
     @Override
     public boolean notContainFilm(long id) {
-        String sqlQuery = "SELECT COUNT(*) FROM films WHERE film_id = ?";
+        String sqlQuery = "SELECT COUNT(*) FROM film WHERE film_id = ?";
         Integer count = jdbcTemplate.queryForObject(sqlQuery, Integer.class, id);
         return count != null && count == 0;
     }
