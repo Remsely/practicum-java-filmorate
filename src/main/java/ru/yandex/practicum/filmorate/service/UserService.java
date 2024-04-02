@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.feed.FeedEntity;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
@@ -72,5 +73,12 @@ public class UserService {
         List<User> friends = userStorage.getCommonFriends(id, otherId);
         log.info("Получен список общих друзей пользователей с id {} и {}. List<User>: {}", id, otherId, friends);
         return friends;
+    }
+
+    public List<FeedEntity> getUserFeed(long userId) {
+        List<FeedEntity> feed = userStorage.getFeed(userId);
+        log.info("Получен список последних событий на платформе для пользователя с id {}. List<FeedEntity>: {}",
+                userId, feed);
+        return userStorage.getFeed(userId);
     }
 }

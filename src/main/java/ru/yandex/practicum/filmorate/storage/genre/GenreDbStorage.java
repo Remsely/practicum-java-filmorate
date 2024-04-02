@@ -8,7 +8,9 @@ import ru.yandex.practicum.filmorate.exception.FilmAttributeNotExistOnFilmCreati
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Genre;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -44,7 +46,10 @@ public class GenreDbStorage implements GenreStorage {
     @Override
     public List<Genre> addFilmGenres(long id, List<Genre> genres) {
         if (genres != null && !genres.isEmpty()) {
-            for (Genre genre : genres) {
+            List<Long> currentFilmGenres = this.getFilmGenresIds(id);
+            Set<Genre> uniqFilmGenres = new HashSet<>(genres);
+
+            for (Genre genre : uniqFilmGenres) {
                 long genreId = genre.getId();
 
                 if (notContainGenre(genreId)) {
@@ -53,9 +58,9 @@ public class GenreDbStorage implements GenreStorage {
                     );
                 }
 
-                if (filmNotContainGenre(id, genreId)) {
+                if (!currentFilmGenres.contains(genreId)) {
                     String sqlQuery = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
-                    jdbcTemplate.update(sqlQuery, id, genre.getId());
+                    jdbcTemplate.update(sqlQuery, id, genreId);
                 }
             }
         }
@@ -69,9 +74,8 @@ public class GenreDbStorage implements GenreStorage {
         return count != null && count == 0;
     }
 
-    private boolean filmNotContainGenre(long filmId, long genreId) {
-        String sqlQuery = "SELECT COUNT(*) FROM film_genre WHERE genre_id = ? AND film_id = ?";
-        Integer count = jdbcTemplate.queryForObject(sqlQuery, Integer.class, genreId, filmId);
-        return count != null && count == 0;
+    private List<Long> getFilmGenresIds(long id) {
+        String sqlQuery = "SELECT genre_id FROM film_genre WHERE film_id = ?";
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getLong("genre_id"), id);
     }
 }
