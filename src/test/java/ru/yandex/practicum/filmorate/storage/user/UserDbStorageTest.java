@@ -290,7 +290,7 @@ class UserDbStorageTest {
     }
 
     @Test
-    public void testGetLike(){
+    public void testGetLike() {
         Film film = Film.builder()
                 .id(1L)
                 .name("Film1")
@@ -323,8 +323,8 @@ class UserDbStorageTest {
         userStorage.add(user2);
         userStorage.addFriend(1, 2);
         filmStorage.add(film);
-        filmStorage.addLike(film.getId(),user1.getId());
-        filmStorage.addLike(film.getId(),user2.getId());
+        filmStorage.addLike(film.getId(), user1.getId());
+        filmStorage.addLike(film.getId(), user2.getId());
         List<Long> test = new ArrayList<>();
         test.add(1L);
         assertThat(userStorage.getLikes(1)).isNotEmpty().isNotNull().isEqualTo(test);
