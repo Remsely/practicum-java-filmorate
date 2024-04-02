@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -74,6 +75,13 @@ public class FilmService {
     public List<Film> getPopular(int count) {
         List<Film> films = filmStorage.getPopular(count);
         log.info("Получен список {} самых популярных фильмов. List<Film>: {}", count, films);
+        return films;
+    }
+
+    // DIRECTOR.Получить список фильмов режиссера отсортированных по количеству лайков или году выпуска.
+    public List<Film> getDirectorFilmsList(long id, String sortBy) {
+        List<Film> films = filmStorage.getDirectorSortedFilms(id, sortBy);
+        log.info("Получен список фильмов {} режиссера Director id {} отсортированных по количеству {}", films, id, sortBy);
         return films;
     }
 }

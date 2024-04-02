@@ -88,4 +88,10 @@ public class InMemoryFilmStorage implements FilmStorage {
     public boolean notContainFilm(long id) {
         return !data.containsKey(id);
     }
+
+    // Добавлен KoryRuno так как есть в интерфейсе "FilmStorage"
+    @Override
+    public List<Film> getDirectorSortedFilms(long id, String sortBy) {
+        return new ArrayList<>();
+    }
 }

@@ -10,6 +10,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MPADbStorage;
@@ -29,13 +30,16 @@ public class GenresDbStorageTest {
     private final JdbcTemplate jdbcTemplate;
     private GenreStorage genreStorage;
     private FilmStorage filmStorage;
+    private DirectorStorage directorStorage;
 
     @BeforeEach
     void init() {
         genreStorage = new GenreDbStorage(jdbcTemplate);
         MPAStorage mpaStorage = new MPADbStorage(jdbcTemplate);
-        filmStorage = new FilmDbStorage(jdbcTemplate, genreStorage, mpaStorage);
+        filmStorage = new FilmDbStorage(jdbcTemplate, genreStorage, mpaStorage, directorStorage);
     }
+
+    // Обновить тесты с учетом новой модели Director
 
     @Test
     public void testGenreStorageNotEmpty() {

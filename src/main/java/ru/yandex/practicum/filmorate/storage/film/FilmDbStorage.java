@@ -4,19 +4,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.FilmAttributeNotExistOnFilmCreationException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MPAStorage;
 
 import java.sql.*;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.sql.Date;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Component
@@ -24,6 +24,7 @@ public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     private final GenreStorage genreStorage;
     private final MPAStorage mpaStorage;
+    private final DirectorStorage directorStorage;
 
     @Override
     public Film add(Film film) {
@@ -57,7 +58,7 @@ public class FilmDbStorage implements FilmStorage {
 
         long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
         genreStorage.addFilmGenres(id, film.getGenres());
-
+        directorStorage.addDirectors(id, film.getDirectors()); // Добавлен KoryRuno "Добавление режисера к фильму"
         return this.get(id);
     }
 
@@ -84,6 +85,9 @@ public class FilmDbStorage implements FilmStorage {
                 film.getReleaseDate(),
                 film.getDuration(),
                 id);
+
+        directorStorage.deleteFilmDirectors(id);
+        directorStorage.addDirectors(id, film.getDirectors()); // Добавлен KoryRuno "Добавление режисера к фильму"
         return this.get(film.getId());
     }
 
@@ -154,6 +158,47 @@ public class FilmDbStorage implements FilmStorage {
         return (new HashSet<>(jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getLong("user_id"), id)));
     }
 
+    // DIRECTOR.Получить список фильмов режиссера отсортированных по количеству лайков или году выпуска
+    @Override
+    public List<Film> getDirectorSortedFilms(long directorId, String sortBy) {
+        if (directorStorage.notContainDirector(directorId)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("Director id", String.format("Не найден режиссер с ID: %d.", directorId))
+            );
+        }
+
+        SqlRowSet filmRow;
+        String sqlQuery = "";
+        List<Film> films = new LinkedList<>();
+
+        if ("year".equals(sortBy)) {
+            sqlQuery = "SELECT film.film_id " +
+                    "FROM film " +
+                    "JOIN film_director ON film.film_id = film_director.film_id " +
+                    "WHERE film_director.director_id = ? " +
+                    "ORDER BY film.release";
+        } else {
+            sqlQuery = "SELECT film.film_id " +
+                    "FROM film " +
+                    "JOIN film_director ON film.film_id = film_director.film_id " +
+                    "LEFT JOIN like_film ON film.film_id = like_film.film_id " +
+                    "WHERE film_director.director_id = ? " +
+                    "GROUP BY film.film_id " +
+                    "ORDER BY COUNT(like_film.film_id) DESC";
+        }
+        filmRow = jdbcTemplate.queryForRowSet(sqlQuery, directorId);
+
+        while (filmRow.next()) {
+            films.add(get(filmRow.getLong("film_id")));
+        }
+        if (films.isEmpty()) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("sortBy", String.format("Список фильмов пустой, режиссер: %d", directorId))
+            );
+        }
+        return films;
+    }
+
     @Override
     public boolean notContainFilm(long id) {
         String sqlQuery = "SELECT COUNT(*) FROM film WHERE film_id = ?";
@@ -170,6 +215,7 @@ public class FilmDbStorage implements FilmStorage {
                 .releaseDate(rs.getDate("release").toLocalDate())
                 .duration(rs.getInt("duration"))
                 .genres(genreStorage.getFilmGenres(id))
+                .directors(directorStorage.getFilmDirectors(id)) // Добавлен KoryRuno "Добавление режисера к фильму"
                 .mpa(mpaStorage.get(rs.getLong("rating_id")))
                 .likes(this.getLikes(id))
                 .build();

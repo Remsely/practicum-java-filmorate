@@ -10,6 +10,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreDbStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MPADbStorage;
@@ -32,14 +33,19 @@ public class FilmDbStorageTest {
     private final JdbcTemplate jdbcTemplate;
     private FilmStorage filmStorage;
     private UserStorage userStorage;
+    private DirectorStorage directorStorage;
 
     @BeforeEach
     void init() {
         GenreStorage genreStorage = new GenreDbStorage(jdbcTemplate);
         MPAStorage mpaStorage = new MPADbStorage(jdbcTemplate);
-        filmStorage = new FilmDbStorage(jdbcTemplate, genreStorage, mpaStorage);
+        filmStorage = new FilmDbStorage(jdbcTemplate, genreStorage, mpaStorage, directorStorage);
         userStorage = new UserDbStorage(jdbcTemplate);
     }
+
+    // Обновить тесты с учетом новой модели Director
+
+    // Написать тест testGetDirectorSortedFilms
 
     @Test
     public void testAddUser() {
@@ -398,6 +404,8 @@ public class FilmDbStorageTest {
         assertThat(popularFilms.get(0).getId()).isEqualTo(3L);
         assertThat(popularFilms.get(1).getId()).isEqualTo(1L);
     }
+
+    // test
 
     @Test
     public void testNotContainFilm() {

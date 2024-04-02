@@ -61,4 +61,11 @@ public class FilmController {
         log.info("Получен GET-запрос к /films/popular?count={}.", count);
         return filmService.getPopular(count);
     }
+
+    // DIRECTOR.Получить список фильмов режиссера отсортированных по количеству лайков или году выпуска.
+    @GetMapping("/director/{id}")
+    public List<Film> getDirectorFilms(@PathVariable long id, @RequestParam(defaultValue = "likes") String sortBy) {
+        log.info("Получен GET-запрос к films/director/{directorId}?sortBy={}", sortBy);
+        return filmService.getDirectorFilmsList(id, sortBy);
+    }
 }
