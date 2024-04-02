@@ -76,4 +76,11 @@ public class FilmService {
         log.info("Получен список {} самых популярных фильмов. List<Film>: {}", count, films);
         return films;
     }
+
+    // DIRECTOR.Получить список фильмов режиссера отсортированных по количеству лайков или году выпуска.
+    public List<Film> getDirectorFilmsList(long id, String sortBy) {
+        List<Film> films = filmStorage.getDirectorSortedFilms(id, sortBy);
+        log.info("Получен список фильмов {} режиссера Director id {} отсортированных по количеству {}", films, id, sortBy);
+        return films;
+    }
 }

@@ -7,16 +7,16 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.FilmAttributeNotExistOnFilmCreationException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MPAStorage;
 
 import java.sql.*;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.sql.Date;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Component
@@ -24,6 +24,7 @@ public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     private final GenreStorage genreStorage;
     private final MPAStorage mpaStorage;
+    private final DirectorStorage directorStorage;
 
     @Override
     public Film add(Film film) {
@@ -57,6 +58,7 @@ public class FilmDbStorage implements FilmStorage {
 
         long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
         genreStorage.addFilmGenres(id, film.getGenres());
+        directorStorage.addDirectors(id, film.getDirectors());
 
         return this.get(id);
     }
@@ -154,6 +156,36 @@ public class FilmDbStorage implements FilmStorage {
         return (new HashSet<>(jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getLong("user_id"), id)));
     }
 
+    // DIRECTOR.Получить список фильмов режиссера отсортированных по количеству лайков или году выпуска.
+    @Override
+    public List<Film> getDirectorSortedFilms(long id, String sortBy) {
+        if (directorStorage.notContainDirector(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("Director id", String.format("Не найден режиссер с ID: %d.", id))
+            );
+        }
+
+        List<Film> sortedFilms = new ArrayList<>();
+
+        String sortRequest = "";
+        if ("year".equals(sortBy)) {
+            sortRequest = "ORDER BY f.release DESC";
+        } else {
+            sortRequest = "ORDER BY COUNT(lf.film_id) DESC";
+        }
+
+        String sqlQuery = "SELECT f.film_id, f.name, f.description, f.rating_id, f.release, f.duration " +
+                "FROM film f " +
+                "JOIN film_director AS fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN like_film AS lf ON f.film_id = lf.film_id " +
+                "WHERE fd.director_id = ? " +
+                "GROUP BY f.film_id " +
+                sortRequest;
+
+        jdbcTemplate.query(sqlQuery, this::mapRowToFilm, id);
+        return sortedFilms;
+    }
+
     @Override
     public boolean notContainFilm(long id) {
         String sqlQuery = "SELECT COUNT(*) FROM film WHERE film_id = ?";
@@ -170,6 +202,7 @@ public class FilmDbStorage implements FilmStorage {
                 .releaseDate(rs.getDate("release").toLocalDate())
                 .duration(rs.getInt("duration"))
                 .genres(genreStorage.getFilmGenres(id))
+                .directors(directorStorage.getFilmDirectors(id))
                 .mpa(mpaStorage.get(rs.getLong("rating_id")))
                 .likes(this.getLikes(id))
                 .build();

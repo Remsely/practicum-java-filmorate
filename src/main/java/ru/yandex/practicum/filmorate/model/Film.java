@@ -33,4 +33,6 @@ public class Film {
     private int duration;
 
     private Set<Long> likes;
+
+    private List<Director> directors;
 }
