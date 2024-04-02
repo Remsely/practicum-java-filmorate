@@ -198,7 +198,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<Long> getLikes(long id) {
-        String sql = "select * from likes where user_id = ?";
+        String sql = "select * from like_film where user_id = ?";
         return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("film_id"), id);
     }
 
