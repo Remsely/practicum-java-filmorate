@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.feed.FeedEntity;
+import ru.yandex.practicum.filmorate.model.feed.FeedEventType;
+import ru.yandex.practicum.filmorate.model.feed.FeedOperation;
+import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
@@ -14,10 +17,13 @@ import java.util.List;
 @Service
 public class UserService {
     private final UserStorage userStorage;
+    private final FeedStorage feedStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
+                       @Qualifier("feedDbStorage") FeedStorage feedStorage) {
         this.userStorage = userStorage;
+        this.feedStorage = feedStorage;
     }
 
     public User addUser(User user) {
@@ -52,6 +58,16 @@ public class UserService {
         log.info("Сохранена заявка на добавление в друзья пользователю с id {} от пользователя с id {}. " +
                         "User (id: {}): {}",
                 id, followerId, id, user);
+
+        FeedEventType eventType = FeedEventType.FRIEND;
+        FeedOperation operation = FeedOperation.ADD;
+
+        feedStorage.add(id, followerId, eventType, operation);
+        log.debug(
+                "Заявка на добавление пользователя с id {} в друзья пользователем с id {} добавлена в таблицу feed. " +
+                        "userId = {}, entityId = {}, eventType = {}, operation = {}",
+                id, followerId, followerId, id, eventType, operation
+        );
         return user;
     }
 
@@ -60,6 +76,16 @@ public class UserService {
         log.info("Удалена заявка на добавление в друзья пользователю с id {} от пользователя с id {}. " +
                         "User (id: {}): {}",
                 id, followerId, id, user);
+
+        FeedEventType eventType = FeedEventType.FRIEND;
+        FeedOperation operation = FeedOperation.REMOVE;
+
+        feedStorage.add(id, followerId, eventType, operation);
+        log.debug(
+                "Удаление пользователя с id {} из друзей пользователя с id {} добавлено в таблицу feed. " +
+                        "userId = {}, entityId = {}, eventType = {}, operation = {}",
+                id, followerId, followerId, id, eventType, operation
+        );
         return user;
     }
 

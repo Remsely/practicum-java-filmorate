@@ -207,24 +207,24 @@ public class UserDbStorage implements UserStorage {
             );
         }
         String sqlQuery =
-                "SELECT " +
+                "SELECT  " +
                         "    f.event_id, " +
                         "    f.user_id, " +
                         "    f.entity_id, " +
                         "    f.time, " +
                         "    eo.name AS operation_name, " +
                         "    et.name AS type_name " +
-                        "FROM " +
+                        "FROM  " +
                         "    feed f " +
-                        "JOIN " +
+                        "JOIN  " +
                         "    event_operation eo ON f.operation_id = eo.operation_id " +
-                        "JOIN " +
+                        "JOIN  " +
                         "    event_type et ON f.type_id = et.type_id " +
-                        "JOIN " +
-                        "    follow fo ON (f.user_id = fo.target_id AND fo.follower_id = ? AND fo.approved = true) " +
-                        "                     OR (f.user_id = fo.follower_id AND fo.target_id = ?) " +
-                        "ORDER BY f.time DESC";
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFeedEntity, id, id);
+                        "WHERE  " +
+                        "    f.user_id = ? " +
+                        "ORDER BY " +
+                        "    f.time";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFeedEntity, id);
     }
 
     @Override
@@ -270,8 +270,8 @@ public class UserDbStorage implements UserStorage {
                 .eventId(rs.getLong("event_id"))
                 .userId(rs.getLong("user_id"))
                 .entityId(rs.getLong("entity_id"))
-                .operation(FeedOperation.valueOf(rs.getString("operation")))
-                .eventType(FeedEventType.valueOf(rs.getString("event_type")))
+                .operation(FeedOperation.valueOf(rs.getString("operation_name")))
+                .eventType(FeedEventType.valueOf(rs.getString("type_name")))
                 .timestamp(rs.getDate("time").getTime())
                 .build();
     }

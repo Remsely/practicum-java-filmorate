@@ -43,16 +43,16 @@ SELECT 'Боевик'
 WHERE NOT EXISTS (SELECT 1 FROM genre WHERE name = 'Боевик');
 
 INSERT INTO event_operation (name)
-SELECT 'REMOVE'
-WHERE NOT EXISTS (SELECT 1 FROM genre WHERE name = 'REMOVE');
-
-INSERT INTO event_operation (name)
 SELECT 'ADD'
 WHERE NOT EXISTS (SELECT 1 FROM genre WHERE name = 'ADD');
 
 INSERT INTO event_operation (name)
 SELECT 'UPDATE'
 WHERE NOT EXISTS (SELECT 1 FROM genre WHERE name = 'UPDATE');
+
+INSERT INTO event_operation (name)
+SELECT 'REMOVE'
+WHERE NOT EXISTS (SELECT 1 FROM genre WHERE name = 'REMOVE');
 
 INSERT INTO event_type (name)
 SELECT 'LIKE'

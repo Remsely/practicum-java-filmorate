@@ -47,7 +47,7 @@ public class UserController {
 
     @PutMapping("/{id}/friends/{followerId}")
     public User putFriend(@PathVariable long id, @PathVariable long followerId) {
-        log.info("Получен PUT-запрос к /users/{}/friends/{}. {} ", id, followerId, userService.getUser(id));
+        log.info("Получен PUT-запрос к /users/{}/friends/{}.", id, followerId);
         return userService.addFriend(id, followerId);
     }
 

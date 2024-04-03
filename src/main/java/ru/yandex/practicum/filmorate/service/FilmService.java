@@ -7,6 +7,9 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.feed.FeedEventType;
+import ru.yandex.practicum.filmorate.model.feed.FeedOperation;
+import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -17,12 +20,15 @@ import java.util.List;
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final FeedStorage feedStorage;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("userDbStorage") UserStorage userStorage) {
+                       @Qualifier("userDbStorage") UserStorage userStorage,
+                       @Qualifier("feedDbStorage") FeedStorage feedStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.feedStorage = feedStorage;
     }
 
     public Film addFilm(Film film) {
@@ -55,8 +61,19 @@ public class FilmService {
                     new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
             );
         }
+
         Film film = filmStorage.addLike(id, userId);
         log.info("Добавлен лайк фильму с id {} от пользователя с id {}. Film: {}", id, userId, film);
+
+        FeedEventType eventType = FeedEventType.LIKE;
+        FeedOperation operation = FeedOperation.ADD;
+
+        feedStorage.add(userId, id, eventType, operation);
+        log.debug(
+                "Лайк пользователя с id {} фильму с id {} добавлен в таблицу feed. " +
+                        "userId = {}, entityId = {}, eventType = {}, operation = {}",
+                userId, id, userId, id, eventType, operation
+        );
         return film;
     }
 
@@ -68,6 +85,16 @@ public class FilmService {
         }
         Film film = filmStorage.removeLike(id, userId);
         log.info("Удален лайк фильму с id {} от пользователя с id {}. Film: {}", id, userId, film);
+
+        FeedEventType eventType = FeedEventType.LIKE;
+        FeedOperation operation = FeedOperation.REMOVE;
+
+        feedStorage.add(userId, id, eventType, operation);
+        log.debug(
+                "Удаление лайка фильму с id {} пользователя с id {} добавлено в таблицу feed. " +
+                        "userId = {}, entityId = {}, eventType = {}, operation = {}",
+                id, userId, userId, id, eventType, operation
+        );
         return film;
     }
 
