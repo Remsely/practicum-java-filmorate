@@ -8,7 +8,10 @@ import ru.yandex.practicum.filmorate.exception.FilmAttributeNotExistOnFilmCreati
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Genre;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -44,7 +47,10 @@ public class GenreDbStorage implements GenreStorage {
     @Override
     public List<Genre> addFilmGenres(long id, List<Genre> genres) {
         if (genres != null && !genres.isEmpty()) {
-            for (Genre genre : genres) {
+            List<Long> currentFilmGenres = this.getFilmGenresIds(id);
+            Set<Genre> uniqFilmGenres = new HashSet<>(genres);
+
+            for (Genre genre : uniqFilmGenres) {
                 long genreId = genre.getId();
 
                 if (notContainGenre(genreId)) {
@@ -53,13 +59,56 @@ public class GenreDbStorage implements GenreStorage {
                     );
                 }
 
-                if (filmNotContainGenre(id, genreId)) {
+                if (!currentFilmGenres.contains(genreId)) {
                     String sqlQuery = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
-                    jdbcTemplate.update(sqlQuery, id, genre.getId());
+                    jdbcTemplate.update(sqlQuery, id, genreId);
                 }
             }
         }
         return genres;
+    }
+
+    @Override
+    public List<Genre> updateFilmGenres(long id, List<Genre> genres) {
+        if (genres != null) {
+            if (genres.isEmpty()) {
+                this.delete(id);
+                return genres;
+            }
+            List<Long> currentFilmGenres = this.getFilmGenresIds(id);
+            Set<Long> uniqNewGenres = genres.stream().map(Genre::getId).collect(Collectors.toSet());
+
+            for (Long genreId : currentFilmGenres) {
+                if (!uniqNewGenres.contains(genreId)) {
+                    this.delete(id, genreId);
+                }
+            }
+            for (Long genreId : uniqNewGenres) {
+                if (notContainGenre(genreId)) {
+                    throw new FilmAttributeNotExistOnFilmCreationException(
+                            new ErrorResponse("Genre id", String.format("Не найден жанр с ID: %d.", id))
+                    );
+                }
+
+                if (!currentFilmGenres.contains(genreId)) {
+                    String sqlQuery = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
+                    jdbcTemplate.update(sqlQuery, id, genreId);
+                }
+            }
+        }
+        return genres;
+    }
+
+    @Override
+    public void delete(long filmId, long genreId) {
+        String sqlQuery = "DELETE FROM film_genre WHERE film_id = ? AND genre_id = ?";
+        jdbcTemplate.update(sqlQuery, filmId, genreId);
+    }
+
+    @Override
+    public void delete(long filmId) {
+        String sqlQuery = "DELETE FROM film_genre WHERE film_id = ?";
+        jdbcTemplate.update(sqlQuery, filmId);
     }
 
     @Override
@@ -69,9 +118,8 @@ public class GenreDbStorage implements GenreStorage {
         return count != null && count == 0;
     }
 
-    private boolean filmNotContainGenre(long filmId, long genreId) {
-        String sqlQuery = "SELECT COUNT(*) FROM film_genre WHERE genre_id = ? AND film_id = ?";
-        Integer count = jdbcTemplate.queryForObject(sqlQuery, Integer.class, genreId, filmId);
-        return count != null && count == 0;
+    private List<Long> getFilmGenresIds(long id) {
+        String sqlQuery = "SELECT genre_id FROM film_genre WHERE film_id = ?";
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getLong("genre_id"), id);
     }
 }

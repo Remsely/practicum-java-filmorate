@@ -13,5 +13,11 @@ public interface GenreStorage {
 
     List<Genre> addFilmGenres(long id, List<Genre> genres);
 
+    List<Genre> updateFilmGenres(long id, List<Genre> genres);
+
+    void delete(long filmId, long genreId);
+
+    void delete(long filmId);
+
     boolean notContainGenre(long id);
 }
