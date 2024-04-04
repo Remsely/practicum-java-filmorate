@@ -84,6 +84,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getReleaseDate(),
                 film.getDuration(),
                 id);
+        genreStorage.updateFilmGenres(id, film.getGenres());
         return this.get(film.getId());
     }
 
