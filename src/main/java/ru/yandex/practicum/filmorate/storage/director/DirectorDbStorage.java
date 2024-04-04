@@ -12,9 +12,9 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
 import java.sql.PreparedStatement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -30,11 +30,7 @@ public class DirectorDbStorage implements DirectorStorage {
             );
         }
         String sqlQuery = "SELECT * FROM director WHERE director_id = ?";
-        return jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) ->
-                Director.builder()
-                        .id(rs.getLong("director_id"))
-                        .name(rs.getString("name"))
-                        .build(), id);
+        return jdbcTemplate.queryForObject(sqlQuery, this::mapRowDirector, id);
     }
 
     @Override
@@ -80,19 +76,16 @@ public class DirectorDbStorage implements DirectorStorage {
     @Override
     public List<Director> getAll() {
         String sqlQuery = "SELECT * FROM director";
-        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> Director.builder()
-                .id(rs.getLong("director_id"))
-                .name(rs.getString("name"))
-                .build());
+        return jdbcTemplate.query(sqlQuery, this::mapRowDirector);
     }
 
     // Добавить режиссеров к фильму
     @Override
     public List<Director> addDirectors(long id, List<Director> directors) {
-        List<Director> addedDirectors = new ArrayList<>();
-
         if (directors != null && !directors.isEmpty()) {
-            for (Director director : directors) {
+            Set<Director> uniqFilmDirectors = new HashSet<>(directors);
+
+            for (Director director : uniqFilmDirectors) {
                 long directorId = director.getId();
 
                 if (notContainDirector(directorId)) {
@@ -100,15 +93,11 @@ public class DirectorDbStorage implements DirectorStorage {
                             new ErrorResponse("Director id", String.format("Не найден режиссер с Id: %d.", id))
                     );
                 }
-
-                if (filmNotContainDirector(id, directorId)) {
-                    String sqlQuery = "INSERT INTO film_director (film_id, director_id) VALUES (?, ?)";
-                    jdbcTemplate.update(sqlQuery, id, directorId);
-                    addedDirectors.add(director);
-                }
+                String sqlQuery = "INSERT INTO film_director (film_id, director_id) VALUES (?, ?)";
+                jdbcTemplate.update(sqlQuery, id, directorId);
             }
         }
-        return addedDirectors;
+        return directors;
     }
 
     // Получить режиссеров фильма
@@ -137,5 +126,12 @@ public class DirectorDbStorage implements DirectorStorage {
         String sqlQuery = "SELECT COUNT(*) FROM film_director WHERE director_id = ? AND film_id = ?";
         Integer count = jdbcTemplate.queryForObject(sqlQuery, Integer.class, directorId, filmId);
         return count != null && count == 0;
+    }
+
+    private Director mapRowDirector(ResultSet rs, int rowNum) throws SQLException {
+        return Director.builder()
+                .id(rs.getLong("director_id"))
+                .name(rs.getString("name"))
+                .build();
     }
 }

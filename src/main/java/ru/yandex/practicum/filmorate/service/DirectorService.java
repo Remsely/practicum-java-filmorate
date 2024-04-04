@@ -20,30 +20,30 @@ public class DirectorService {
 
     public Director getDirector(long id) {
         Director director = directorStorage.get(id);
-        log.info("Получен режиссеров с id {}. Director: {}", id, director);
+        log.info("Получен режиссер с id {}. Director: {}", id, director);
         return director;
     }
 
     public Director addDirector(Director director) {
         Director savedDirector = directorStorage.add(director);
-        log.info("Режиссер добавлен. Director: {}", savedDirector);
+        log.info("Добавлен режиссер Director: {}", savedDirector);
         return savedDirector;
     }
 
     public Director updateDirector(Director director) {
         Director savedDirector = directorStorage.update(director);
-        log.info("Данные режиссера обновлены. Director: {}", savedDirector);
+        log.info("Обновлен режиссер Director: {}", savedDirector);
         return savedDirector;
     }
 
     public void deleteDirector(long id) {
         directorStorage.delete(id);
-        log.info("Режиссер удален. directorId: {}", id);
+        log.info("Удален режиссер directorId: {}", id);
     }
 
     public List<Director> getAllDirectors() {
         List<Director> directors = directorStorage.getAll();
-        log.info("Получен список всех режиссеров. List<Director>: {}", directors);
+        log.info("Получен список всех режиссеров List<Director>: {}", directors);
         return directors;
     }
 }
