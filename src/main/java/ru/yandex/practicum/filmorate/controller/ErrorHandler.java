@@ -31,14 +31,6 @@ public class ErrorHandler {
         return e.getErrorResponse();
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ResponseBody
-    public String onMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        log.error(e.getMessage());
-        return e.getMessage();
-    }
-
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleBadRequest(final ValidationException e) {
