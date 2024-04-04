@@ -73,8 +73,9 @@ public class ReviewDbStorage {
 
         List<Review> list = new ArrayList<>();
         while (rows.next()) {
-            Review review = mapRowToReview(rows);
-            list.add(review);
+            //Review review = mapRowToReview(rows);
+            //list.add(review);
+            list.add(mapRowToReview(rows));
         }
         return list;
     }
