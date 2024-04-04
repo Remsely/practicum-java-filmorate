@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
@@ -20,7 +19,7 @@ public class ReviewController {
     // Добавление нового отзыва
     // POST /reviews
     @PostMapping
-    public Review addReview(@Valid @RequestBody Review review) {
+    public Review addReview(@RequestBody Review review) {
         log.info("Получен POST-запрос: /reviews. Тело запроса: {}", review);
         return reviewService.addReview(review);
     }

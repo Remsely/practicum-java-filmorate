@@ -30,7 +30,7 @@ public class ReviewDbStorage {
             stmt.setString(1, review.getContent());
             stmt.setLong(2, review.getUserId());
             stmt.setLong(3, review.getFilmId());
-            stmt.setBoolean(4, review.isPositive());
+            stmt.setBoolean(4, review.getIsPositive());
             return stmt;
         }, keyHolder);
 
@@ -44,7 +44,7 @@ public class ReviewDbStorage {
                 "UPDATE review SET content = ?, is_positive = ? WHERE review_id = ?";
         jdbcTemplate.update(sqlQuery,
                 review.getContent(),
-                review.isPositive(),
+                review.getIsPositive(),
                 review.getReviewId());
         return getReview(review.getReviewId());
     }
@@ -73,7 +73,8 @@ public class ReviewDbStorage {
 
         List<Review> list = new ArrayList<>();
         while (rows.next()) {
-            list.add(mapRowToReview(rows));
+            Review review = mapRowToReview(rows);
+            list.add(review);
         }
         return list;
     }
