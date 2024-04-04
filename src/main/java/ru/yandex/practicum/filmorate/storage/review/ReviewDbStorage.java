@@ -18,7 +18,6 @@ import java.util.Objects;
 @RequiredArgsConstructor
 @Component
 public class ReviewDbStorage {
-
     private final JdbcTemplate jdbcTemplate;
 
     public Review add(Review review) {
@@ -58,8 +57,13 @@ public class ReviewDbStorage {
     }
 
     public Review getReview(long id) {
-        String sqlQuery = getBaseCommand() +
-                "WHERE review_id = ?";
+        String sqlQuery =
+                "SELECT *, " +
+                        "  (SELECT sum(CASE usefull WHEN true THEN 1 ELSE -1 END) " +
+                        "   FROM like_review " +
+                        "   WHERE review_id = r.review_id) AS useful " +
+                        "FROM review as r " +
+                        "WHERE review_id = ?";
         SqlRowSet rows = jdbcTemplate.queryForRowSet(sqlQuery, id);
         if (rows.next()) {
             return mapRowToReview(rows);
@@ -88,15 +92,10 @@ public class ReviewDbStorage {
                         "LIMIT ?";
         SqlRowSet rows = jdbcTemplate.queryForRowSet(sqlQuery, count);
 
-        log.info(rows.toString());
         List<Review> list = new ArrayList<>();
         while (rows.next()) {
-            //Review review = mapRowToReview(rows);
-            //list.add(review);
             list.add(mapRowToReview(rows));
-            log.info(list.toString());
         }
-        log.info(list.toString());
         return list;
     }
 
@@ -158,15 +157,6 @@ public class ReviewDbStorage {
         return !rows.next();
     }
 
-    private String getBaseCommand() {
-        return
-                "SELECT *, \n " +
-                        "  (SELECT sum(CASE usefull WHEN true THEN 1 ELSE -1 END) \n " +
-                        "   FROM like_review \n " +
-                        "   WHERE review_id = r.review_id) AS useful \n " +
-                        "FROM review as r \n ";
-    }
-
     private Review mapRowToReview(SqlRowSet rs) {
         return Review.builder()
                 .reviewId(rs.getLong("review_id"))
@@ -177,5 +167,4 @@ public class ReviewDbStorage {
                 .useful(rs.getLong("useful"))
                 .build();
     }
-
 }
