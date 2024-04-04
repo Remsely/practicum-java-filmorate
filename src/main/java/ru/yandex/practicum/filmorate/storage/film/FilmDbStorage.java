@@ -70,7 +70,6 @@ public class FilmDbStorage implements FilmStorage {
                     new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
             );
         }
-        directorStorage.deleteFilmDirectors(id); // Добавлен KoryRuno "Перед обновлением удаляет режисеров фильма"
         String sqlQuery =
                 "UPDATE film " +
                         "SET name = ?, " +
@@ -86,7 +85,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getReleaseDate(),
                 film.getDuration(),
                 id);
-
+        genreStorage.updateFilmGenres(id, film.getGenres());
         directorStorage.deleteFilmDirectors(id); // Добавлен KoryRuno "Перед обновлением удаляет режисеров фильма"
         directorStorage.addDirectors(id, film.getDirectors()); // Добавлен KoryRuno "Добавление режисера к фильму"
         return this.get(film.getId());

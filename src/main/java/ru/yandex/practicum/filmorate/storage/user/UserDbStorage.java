@@ -197,6 +197,12 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
+    public List<Long> getLikes(long id) {
+        String sql = "select * from like_film where user_id = ?";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("film_id"), id);
+    }
+
+    @Override
     public boolean notContainUser(long id) {
         String sqlQuery = "select count(*) from user_data where USER_ID = ?";
         Integer count = jdbcTemplate.queryForObject(sqlQuery, Integer.class, id);

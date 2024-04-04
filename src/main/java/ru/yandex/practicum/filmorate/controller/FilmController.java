@@ -62,6 +62,14 @@ public class FilmController {
         return filmService.getPopular(count);
     }
 
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam(value = "userId") long userId,
+                                     @RequestParam(value = "friendId") long friendId) {
+        log.info("Получен GET-запрос к /films/common?userId={}&friendId={}.", userId, friendId);
+        return filmService.getCommonFilm(userId, userId);
+    }
+
+
     // DIRECTOR.Получить список фильмов режиссера отсортированных по количеству лайков или году выпуска.
     @GetMapping("/director/{id}")
     public List<Film> getDirectorFilms(@PathVariable long id, @RequestParam(defaultValue = "likes") String sortBy) {
