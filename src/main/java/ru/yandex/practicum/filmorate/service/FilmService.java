@@ -87,4 +87,12 @@ public class FilmService {
                 .collect(Collectors.toList());
 
     }
+
+    // DIRECTOR.Получить список фильмов режиссера отсортированных по количеству лайков или году выпуска.
+    public List<Film> getDirectorFilmsList(long id, String sortBy) {
+        List<Film> films = filmStorage.getDirectorSortedFilms(id, sortBy);
+        log.info("Получен список фильмов режисера Director Id: {}, " +
+                "сортировка sortBy: {} list: {}", id, sortBy, films);
+        return films;
+    }
 }
