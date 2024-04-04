@@ -73,7 +73,7 @@ public class ReviewService {
 
     public List<Review> getAllReviews(int count) {
         List<Review> reviews = reviewStorage.getAllReviews(count);
-        log.info("Получен список отзывов на все фильмы (count {})", count);
+        log.info("Получен список отзывов на все фильмы (count {}). List : {}", count, reviews);
         return reviews;
     }
 
