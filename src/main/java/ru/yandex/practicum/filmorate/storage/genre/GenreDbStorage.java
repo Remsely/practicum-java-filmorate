@@ -47,7 +47,6 @@ public class GenreDbStorage implements GenreStorage {
     @Override
     public List<Genre> addFilmGenres(long id, List<Genre> genres) {
         if (genres != null && !genres.isEmpty()) {
-            List<Long> currentFilmGenres = this.getFilmGenresIds(id);
             Set<Genre> uniqFilmGenres = new HashSet<>(genres);
 
             for (Genre genre : uniqFilmGenres) {
@@ -58,11 +57,7 @@ public class GenreDbStorage implements GenreStorage {
                             new ErrorResponse("Genre id", String.format("Не найден жанр с ID: %d.", id))
                     );
                 }
-
-                if (!currentFilmGenres.contains(genreId)) {
-                    String sqlQuery = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
-                    jdbcTemplate.update(sqlQuery, id, genreId);
-                }
+                this.add(id, genreId);
             }
         }
         return genres;
@@ -75,14 +70,11 @@ public class GenreDbStorage implements GenreStorage {
                 this.delete(id);
                 return genres;
             }
+
             List<Long> currentFilmGenres = this.getFilmGenresIds(id);
             Set<Long> uniqNewGenres = genres.stream().map(Genre::getId).collect(Collectors.toSet());
+            Set<Long> genresToAdd = new HashSet<>();
 
-            for (Long genreId : currentFilmGenres) {
-                if (!uniqNewGenres.contains(genreId)) {
-                    this.delete(id, genreId);
-                }
-            }
             for (Long genreId : uniqNewGenres) {
                 if (notContainGenre(genreId)) {
                     throw new FilmAttributeNotExistOnFilmCreationException(
@@ -91,12 +83,22 @@ public class GenreDbStorage implements GenreStorage {
                 }
 
                 if (!currentFilmGenres.contains(genreId)) {
-                    String sqlQuery = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
-                    jdbcTemplate.update(sqlQuery, id, genreId);
+                    genresToAdd.add(genreId);
                 }
             }
+            currentFilmGenres.forEach(genreId -> {
+                if (!uniqNewGenres.contains(genreId))
+                    this.delete(id, genreId);
+            });
+            genresToAdd.forEach(genreId -> this.add(id, genreId));
         }
         return genres;
+    }
+
+    @Override
+    public void add(long filmId, long genreId) {
+        String sqlQuery = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
+        jdbcTemplate.update(sqlQuery, filmId, genreId);
     }
 
     @Override

@@ -8,6 +8,9 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.feed.FeedEntity;
+import ru.yandex.practicum.filmorate.model.feed.FeedEventType;
+import ru.yandex.practicum.filmorate.model.feed.FeedOperation;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -203,6 +206,34 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
+    public List<FeedEntity> getFeed(long id) {
+        if (this.notContainUser(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
+            );
+        }
+        String sqlQuery =
+                "SELECT  " +
+                        "    f.event_id, " +
+                        "    f.user_id, " +
+                        "    f.entity_id, " +
+                        "    f.time, " +
+                        "    eo.name AS operation_name, " +
+                        "    et.name AS type_name " +
+                        "FROM  " +
+                        "    feed f " +
+                        "JOIN  " +
+                        "    event_operation eo ON f.operation_id = eo.operation_id " +
+                        "JOIN  " +
+                        "    event_type et ON f.type_id = et.type_id " +
+                        "WHERE  " +
+                        "    f.user_id = ? " +
+                        "ORDER BY " +
+                        "    f.time";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFeedEntity, id);
+    }
+
+    @Override
     public boolean notContainUser(long id) {
         String sqlQuery = "select count(*) from user_data where USER_ID = ?";
         Integer count = jdbcTemplate.queryForObject(sqlQuery, Integer.class, id);
@@ -237,6 +268,17 @@ public class UserDbStorage implements UserStorage {
                 .email(rs.getString("email"))
                 .birthday(rs.getDate("birthday").toLocalDate())
                 .friends(this.getFriendsIds(id))
+                .build();
+    }
+
+    private FeedEntity mapRowToFeedEntity(ResultSet rs, int rowNum) throws SQLException {
+        return FeedEntity.builder()
+                .eventId(rs.getLong("event_id"))
+                .userId(rs.getLong("user_id"))
+                .entityId(rs.getLong("entity_id"))
+                .operation(FeedOperation.valueOf(rs.getString("operation_name")))
+                .eventType(FeedEventType.valueOf(rs.getString("type_name")))
+                .timestamp(rs.getDate("time").getTime())
                 .build();
     }
 
