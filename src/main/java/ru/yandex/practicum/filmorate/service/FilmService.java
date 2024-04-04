@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -75,5 +76,15 @@ public class FilmService {
         List<Film> films = filmStorage.getPopular(count);
         log.info("Получен список {} самых популярных фильмов. List<Film>: {}", count, films);
         return films;
+    }
+
+    public List<Film> getCommonFilm(long userId, long friendId) {
+        List<Long> likeUser = userStorage.getLikes(userId);
+        List<Long> friendUser = userStorage.getLikes(friendId);
+        return likeUser.stream()
+                .filter(friendUser::contains)
+                .map(this::getFilm)
+                .collect(Collectors.toList());
+
     }
 }

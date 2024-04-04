@@ -7,9 +7,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreDbStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MPADbStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MPAStorage;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -22,9 +30,13 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 class UserDbStorageTest {
     private final JdbcTemplate jdbcTemplate;
     private UserDbStorage userStorage;
+    private FilmDbStorage filmStorage;
 
     @BeforeEach
     void init() {
+        GenreStorage genreStorage = new GenreDbStorage(jdbcTemplate);
+        MPAStorage mpaStorage = new MPADbStorage(jdbcTemplate);
+        filmStorage = new FilmDbStorage(jdbcTemplate, genreStorage, mpaStorage);
         userStorage = new UserDbStorage(jdbcTemplate);
     }
 
@@ -275,5 +287,47 @@ class UserDbStorageTest {
         userStorage.add(user1);
 
         assertThat(userStorage.notContainUser(1)).isEqualTo(false);
+    }
+
+    @Test
+    public void testGetLike() {
+        Film film = Film.builder()
+                .id(1L)
+                .name("Film1")
+                .description("Description1")
+                .genres(Collections.emptyList())
+                .mpa(new MPA(1L, "G"))
+                .releaseDate(LocalDate.of(2020, 8, 25))
+                .duration(100)
+                .likes(Collections.emptySet())
+                .build();
+        User user1 = User.builder()
+                .id(1L)
+                .name("Ivan Petrov")
+                .email("user1@email.ru")
+                .login("vanya1")
+                .birthday(LocalDate.of(1990, 1, 1))
+                .friends(Collections.emptySet())
+                .build();
+
+        User user2 = User.builder()
+                .id(2L)
+                .name("Ivan Petrov")
+                .email("user2@email.ru")
+                .login("vanya2")
+                .birthday(LocalDate.of(1990, 1, 1))
+                .friends(Collections.emptySet())
+                .build();
+
+        userStorage.add(user1);
+        userStorage.add(user2);
+        userStorage.addFriend(1, 2);
+        filmStorage.add(film);
+        filmStorage.addLike(film.getId(), user1.getId());
+        filmStorage.addLike(film.getId(), user2.getId());
+        List<Long> test = new ArrayList<>();
+        test.add(1L);
+        assertThat(userStorage.getLikes(1)).isNotEmpty().isNotNull().isEqualTo(test);
+        assertThat(userStorage.getLikes(2)).isNotEmpty().isNotNull().isEqualTo(test);
     }
 }
