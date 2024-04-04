@@ -172,7 +172,7 @@ public class FilmDbStorage implements FilmStorage {
         List<Film> films = new LinkedList<>();
 
         if ("year".equals(sortBy)) {
-            sqlQuery = "SELECT film.film_id " +
+             sqlQuery = "SELECT film.film_id " +
                     "FROM film " +
                     "JOIN film_director ON film.film_id = film_director.film_id " +
                     "WHERE film_director.director_id = ? " +

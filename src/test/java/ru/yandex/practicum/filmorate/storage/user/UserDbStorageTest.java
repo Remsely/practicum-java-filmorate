@@ -10,6 +10,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.director.DirectorDbStorage;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreDbStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
@@ -36,7 +38,8 @@ class UserDbStorageTest {
     void init() {
         GenreStorage genreStorage = new GenreDbStorage(jdbcTemplate);
         MPAStorage mpaStorage = new MPADbStorage(jdbcTemplate);
-        filmStorage = new FilmDbStorage(jdbcTemplate, genreStorage, mpaStorage);
+        DirectorStorage directorStorage = new DirectorDbStorage(jdbcTemplate);
+        filmStorage = new FilmDbStorage(jdbcTemplate, genreStorage, mpaStorage, directorStorage);
         userStorage = new UserDbStorage(jdbcTemplate);
     }
 
