@@ -115,7 +115,7 @@ public class DirectorDbStorage implements DirectorStorage {
     @Override
     public List<Director> getFilmDirectors(long id) {
         String sqlQuery = "SELECT * FROM film_director WHERE film_id = ?";
-        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> get(rs.getLong("director_id")), id);
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> this.get(rs.getLong("director_id")), id);
     }
 
     // Удалить все связи режиссеров с фильмом

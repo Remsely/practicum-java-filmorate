@@ -14,8 +14,8 @@ import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MPAStorage;
 
-import java.sql.*;
 import java.sql.Date;
+import java.sql.*;
 import java.util.*;
 
 @RequiredArgsConstructor
@@ -70,6 +70,7 @@ public class FilmDbStorage implements FilmStorage {
                     new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
             );
         }
+        directorStorage.deleteFilmDirectors(id); // Добавлен KoryRuno "Перед обновлением удаляет режисеров фильма"
         String sqlQuery =
                 "UPDATE film " +
                         "SET name = ?, " +
@@ -86,7 +87,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDuration(),
                 id);
 
-        directorStorage.deleteFilmDirectors(id);
+        directorStorage.deleteFilmDirectors(id); // Добавлен KoryRuno "Перед обновлением удаляет режисеров фильма"
         directorStorage.addDirectors(id, film.getDirectors()); // Добавлен KoryRuno "Добавление режисера к фильму"
         return this.get(film.getId());
     }
