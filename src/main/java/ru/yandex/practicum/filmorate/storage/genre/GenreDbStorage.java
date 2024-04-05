@@ -52,13 +52,7 @@ public class GenreDbStorage implements GenreStorage {
 
         Set<Long> uniqFilmGenres = genres.stream().map(Genre::getId).collect(Collectors.toSet());
 
-        for (Long genreId : uniqFilmGenres) {
-            if (notContainGenre(genreId)) {
-                throw new FilmAttributeNotExistOnFilmCreationException(
-                        new ErrorResponse("Genre id", String.format("Не найден жанр с ID: %d.", id))
-                );
-            }
-        }
+        uniqFilmGenres.forEach(this::checkFilmGenreExist);
         uniqFilmGenres.forEach(genreId -> this.add(id, genreId));
         return genres;
     }
@@ -77,13 +71,7 @@ public class GenreDbStorage implements GenreStorage {
         Set<Long> currentGenres = new HashSet<>(this.getFilmGenresIds(id));
         Set<Long> newGenres = genres.stream().map(Genre::getId).collect(Collectors.toSet());
 
-        for (Long genreId : newGenres) {
-            if (notContainGenre(genreId)) {
-                throw new FilmAttributeNotExistOnFilmCreationException(
-                        new ErrorResponse("Genre id", String.format("Не найден жанр с ID: %d.", id))
-                );
-            }
-        }
+        newGenres.forEach(this::checkFilmGenreExist);
 
         Set<Long> genresToRemove = new HashSet<>(currentGenres);
         genresToRemove.removeAll(newGenres);
@@ -124,5 +112,13 @@ public class GenreDbStorage implements GenreStorage {
     private List<Long> getFilmGenresIds(long id) {
         String sqlQuery = "SELECT genre_id FROM film_genre WHERE film_id = ?";
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getLong("genre_id"), id);
+    }
+
+    private void checkFilmGenreExist(long id) {
+        if (notContainGenre(id)) {
+            throw new FilmAttributeNotExistOnFilmCreationException(
+                    new ErrorResponse("Genre id", String.format("Не найден жанр с ID: %d.", id))
+            );
+        }
     }
 }
