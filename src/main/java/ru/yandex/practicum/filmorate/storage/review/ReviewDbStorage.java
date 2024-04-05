@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.review;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -14,10 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-@Slf4j
 @RequiredArgsConstructor
 @Component
 public class ReviewDbStorage {
+
     private final JdbcTemplate jdbcTemplate;
 
     public Review add(Review review) {
@@ -57,13 +56,8 @@ public class ReviewDbStorage {
     }
 
     public Review getReview(long id) {
-        String sqlQuery =
-                "SELECT *, " +
-                        "  (SELECT sum(CASE usefull WHEN true THEN 1 ELSE -1 END) " +
-                        "   FROM like_review " +
-                        "   WHERE review_id = r.review_id) AS useful " +
-                        "FROM review as r " +
-                        "WHERE review_id = ?";
+        String sqlQuery = getBaseCommand() +
+                "WHERE review_id = ?";
         SqlRowSet rows = jdbcTemplate.queryForRowSet(sqlQuery, id);
         if (rows.next()) {
             return mapRowToReview(rows);
@@ -72,24 +66,9 @@ public class ReviewDbStorage {
     }
 
     public List<Review> getAllReviews(int count) {
-        String sqlQuery =
-                "SELECT" +
-                        "  r.review_id, " +
-                        "  r.content, " +
-                        "  r.user_id, " +
-                        "  r.film_id, " +
-                        "  r.is_positive, " +
-                        "  COALESCE(lr.useful_count, 0) AS useful " +
-                        "FROM review AS r " +
-                        "LEFT JOIN ( " +
-                        "  SELECT " +
-                        "    review_id, " +
-                        "    SUM(CASE WHEN usefull THEN 1 ELSE -1 END) AS useful_count " +
-                        "  FROM like_review " +
-                        "  GROUP BY review_id " +
-                        ") AS lr ON lr.review_id = r.review_id " +
-                        "ORDER BY useful DESC " +
-                        "LIMIT ?";
+        String sqlQuery = getBaseCommand() +
+                "ORDER BY useful DESC \n " +
+                "LIMIT ? ";
         SqlRowSet rows = jdbcTemplate.queryForRowSet(sqlQuery, count);
 
         List<Review> list = new ArrayList<>();
@@ -100,24 +79,10 @@ public class ReviewDbStorage {
     }
 
     public List<Review> getFilmReviews(long filmId, int count) {
-        String sqlQuery = "SELECT" +
-                "  r.review_id, " +
-                "  r.content, " +
-                "  r.user_id, " +
-                "  r.film_id, " +
-                "  r.is_positive, " +
-                "  COALESCE(lr.useful_count, 0) AS useful " +
-                "FROM review AS r " +
-                "LEFT JOIN ( " +
-                "  SELECT " +
-                "    review_id, " +
-                "    SUM(CASE WHEN usefull THEN 1 ELSE -1 END) AS useful_count " +
-                "  FROM like_review " +
-                "  GROUP BY review_id " +
-                ") AS lr ON lr.review_id = r.review_id " +
-                "WHERE r.film_id = ?" +
-                "ORDER BY useful DESC " +
-                "LIMIT ?";
+        String sqlQuery = getBaseCommand() +
+                "WHERE film_id = ? \n " +
+                "ORDER BY useful DESC \n " +
+                "LIMIT ? ";
         SqlRowSet rows = jdbcTemplate.queryForRowSet(sqlQuery, filmId, count);
 
         List<Review> list = new ArrayList<>();
@@ -157,6 +122,17 @@ public class ReviewDbStorage {
         return !rows.next();
     }
 
+    private String getBaseCommand() {
+        return
+                "SELECT \n " +
+                "  review_id, content, user_id, film_id, is_positive, \n " +
+                "  IFNULL((SELECT sum(CASE usefull WHEN true THEN 1 ELSE -1 END) \n " +
+                "          FROM like_review \n " +
+                "          WHERE review_id = r.review_id), \n " +
+                        " 0) AS useful \n " +
+                "FROM review as r \n ";
+    }
+
     private Review mapRowToReview(SqlRowSet rs) {
         return Review.builder()
                 .reviewId(rs.getLong("review_id"))
@@ -167,4 +143,5 @@ public class ReviewDbStorage {
                 .useful(rs.getLong("useful"))
                 .build();
     }
+
 }
