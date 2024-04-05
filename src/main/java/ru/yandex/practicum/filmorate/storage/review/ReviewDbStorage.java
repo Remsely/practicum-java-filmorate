@@ -50,10 +50,13 @@ public class ReviewDbStorage {
         return getReview(review.getReviewId());
     }
 
-    public boolean delete(long id) {
-        String sqlQuery =
-                "DELETE FROM review WHERE review_id = ?";
-        return jdbcTemplate.update(sqlQuery, id) > 0;
+    public Review delete(long id) {
+        Review review = this.getReview(id);
+
+        String sqlQuery = "DELETE FROM review WHERE review_id = ?";
+        jdbcTemplate.update(sqlQuery, id);
+
+        return review;
     }
 
     public Review getReview(long id) {

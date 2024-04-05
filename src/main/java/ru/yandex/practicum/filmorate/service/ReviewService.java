@@ -7,6 +7,9 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.feed.FeedEventType;
+import ru.yandex.practicum.filmorate.model.feed.FeedOperation;
+import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -16,27 +19,43 @@ import java.util.List;
 @Slf4j
 @Service
 public class ReviewService {
-
     private final ReviewDbStorage reviewStorage;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
-
+    private final FeedStorage feedStorage;
 
     @Autowired
     public ReviewService(
             ReviewDbStorage reviewStorage,
             @Qualifier("userDbStorage") UserStorage userStorage,
-            @Qualifier("filmDbStorage") FilmStorage filmStorage) {
+            @Qualifier("filmDbStorage") FilmStorage filmStorage,
+            @Qualifier("feedDbStorage") FeedStorage feedStorage) {
         this.reviewStorage = reviewStorage;
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
+        this.feedStorage = feedStorage;
     }
 
     public Review addReview(Review review) {
-        checkUserExists(review.getUserId());
+        long userId = review.getUserId();
+        long filmId = review.getFilmId();
+
+        checkUserExists(userId);
         checkFilmExists(review.getFilmId());
+
         Review savedReview = reviewStorage.add(review);
         log.info("Отзыв добавлен: {}", savedReview);
+
+        long reviewId = savedReview.getReviewId();
+        FeedEventType eventType = FeedEventType.REVIEW;
+        FeedOperation operation = FeedOperation.ADD;
+
+        feedStorage.add(userId, reviewId, eventType, operation);
+        log.debug(
+                "Добавление отзыва пользователя с id {} о фильме с id {} добавлен в таблицу feed. " +
+                        "userId = {}, entityId = {}, eventType = {}, operation = {}",
+                userId, filmId, userId, reviewId, eventType, operation
+        );
         return savedReview;
     }
 
@@ -44,19 +63,47 @@ public class ReviewService {
     // т.к. пользователь может редактировать только свой отзыв на тот фильм, на который
     // был написан отзыв
     public Review updateReview(Review review) {
+        long reviewId = review.getReviewId();
+        long filmId = review.getFilmId();
+
         Review savedReview = reviewStorage.update(review);
         if (savedReview == null) {
-            throwReviewNotExists(review.getReviewId());
+            throwReviewNotExists(reviewId);
         }
         log.info("Отзыв обновлен: {}", savedReview);
+
+        long userId = savedReview.getUserId();
+
+        FeedEventType eventType = FeedEventType.REVIEW;
+        FeedOperation operation = FeedOperation.UPDATE;
+
+        feedStorage.add(userId, reviewId, eventType, operation);
+        log.debug(
+                "Обновление отзыва пользователя с id {} о фильме с id {} добавлен в таблицу feed. " +
+                        "userId = {}, entityId = {}, eventType = {}, operation = {}",
+                userId, filmId, userId, reviewId, eventType, operation
+        );
         return savedReview;
     }
 
     public void deleteReview(long id) {
-        if (!reviewStorage.delete(id)) {
-            throwReviewNotExists(id);
-        }
+        checkReviewExists(id);
+
+        Review review = reviewStorage.delete(id);
         log.info("Отзыв с id {} удален", id);
+
+        long userId = review.getUserId();
+        long filmId = review.getFilmId();
+
+        FeedEventType eventType = FeedEventType.REVIEW;
+        FeedOperation operation = FeedOperation.REMOVE;
+
+        feedStorage.add(userId, id, eventType, operation);
+        log.debug(
+                "Удаление отзыва пользователя с id {} о фильме с id {} добавлен в таблицу feed. " +
+                        "userId = {}, entityId = {}, eventType = {}, operation = {}",
+                userId, filmId, userId, id, eventType, operation
+        );
     }
 
     public Review getReview(long id) {
