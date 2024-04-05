@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -34,7 +33,6 @@ public class ReviewService {
     }
 
     public Review addReview(Review review) {
-        validation(review);
         checkUserExists(review.getUserId());
         checkFilmExists(review.getFilmId());
         Review savedReview = reviewStorage.add(review);
@@ -46,7 +44,6 @@ public class ReviewService {
     // т.к. пользователь может редактировать только свой отзыв на тот фильм, на который
     // был написан отзыв
     public Review updateReview(Review review) {
-        validation(review);
         Review savedReview = reviewStorage.update(review);
         if (savedReview == null) {
             throwReviewNotExists(review.getReviewId());
@@ -139,20 +136,4 @@ public class ReviewService {
         throw new EntityNotFoundException(
                 new ErrorResponse("Review id", String.format("Не найден отзыв с ID: %d.", reviewId)));
     }
-
-    private void validation(Review review) {
-        if (review.getContent() == null || review.getContent().isBlank()) {
-            throw new ValidationException("Не заполнено содержание отзыва");
-        }
-        if (review.getUserId() == null) {
-            throw new ValidationException("Не указан код пользователя");
-        }
-        if (review.getFilmId() == null) {
-            throw new ValidationException("Не указан код фильма");
-        }
-        if (review.getIsPositive() == null) {
-            throw new ValidationException("Не указан тип отзыва");
-        }
-    }
-
 }

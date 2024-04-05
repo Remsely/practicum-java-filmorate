@@ -12,18 +12,19 @@ import javax.validation.constraints.NotNull;
 public class Review {
     private long reviewId;
 
+    @NotNull
     @NotBlank(message = "Описание не может быть пустым")
     private String content;
 
     @NotNull
-    Long userId;
+    private Long userId;
 
     @NotNull
-    Long filmId;
+    private Long filmId;
 
     @NotNull
     @JsonProperty("isPositive")
-    Boolean isPositive;
+    private Boolean isPositive;
 
     // Расчетное значение полезности отзыва
     long useful;
