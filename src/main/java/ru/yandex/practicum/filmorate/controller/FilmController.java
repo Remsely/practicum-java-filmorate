@@ -38,6 +38,11 @@ public class FilmController {
         return filmService.getFilm(id);
     }
 
+    @DeleteMapping(value = "/{filmId}")
+    public void delete(@PathVariable long filmId) {
+        filmService.deleteFilm(filmId);
+    }
+
     @GetMapping
     public List<Film> getFilms() {
         log.info("Получен GET-запрос к /films.");

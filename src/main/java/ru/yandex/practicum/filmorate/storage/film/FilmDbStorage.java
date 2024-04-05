@@ -103,6 +103,17 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public void delete(long id) {
+        if (this.notContainFilm(id) && (id < 0)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
+            );
+        }
+        String sqlQuery = "DELETE FROM film WHERE film_id = " + id;
+        jdbcTemplate.execute(sqlQuery);
+    }
+
+    @Override
     public List<Film> getAll() {
         String sqlQuery = "SELECT * FROM film";
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm);

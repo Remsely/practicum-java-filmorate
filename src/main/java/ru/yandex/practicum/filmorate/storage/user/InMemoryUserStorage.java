@@ -48,6 +48,17 @@ public class InMemoryUserStorage implements UserStorage {
         return data.get(id);
     }
 
+    // Добавлен так как есть в интерфейсе "UserStorage"
+    @Override
+    public void delete(long id) {
+        if (this.notContainUser(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
+            );
+        }
+        data.remove(id);
+    }
+
     @Override
     public List<User> getAll() {
         return new ArrayList<>(data.values());

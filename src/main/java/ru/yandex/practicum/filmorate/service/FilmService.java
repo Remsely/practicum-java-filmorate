@@ -44,6 +44,11 @@ public class FilmService {
         return film;
     }
 
+    public void deleteFilm(long id) {
+        filmStorage.delete(id);
+        log.info("Фильм удален id: {}", id);
+    }
+
     public List<Film> getAllFilms() {
         List<Film> films = filmStorage.getAll();
         log.info("Получен список всех фильмов. List<Film>: {}", films);

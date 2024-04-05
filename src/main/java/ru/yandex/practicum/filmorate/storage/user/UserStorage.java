@@ -11,6 +11,8 @@ public interface UserStorage {
 
     User get(long id);
 
+    void delete(long id);
+
     List<User> getAll();
 
     User addFriend(long id, long friendId);
