@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @Slf4j
@@ -20,7 +19,7 @@ public class ReviewController {
     // Добавление нового отзыва
     // POST /reviews
     @PostMapping
-    public Review addReview(@Valid @RequestBody Review review) {
+    public Review addReview(@RequestBody Review review) {
         log.info("Получен POST-запрос: /reviews. Тело запроса: {}", review);
         return reviewService.addReview(review);
     }
@@ -28,7 +27,7 @@ public class ReviewController {
     // Редактирование уже имеющегося отзыва
     // PUT /reviews
     @PutMapping
-    public Review updateReview(@Valid @RequestBody Review review) {
+    public Review updateReview(@RequestBody Review review) {
         log.info("Получен PUT-запрос: /reviews. Тело запроса: {}", review);
         return reviewService.updateReview(review);
     }
@@ -53,7 +52,7 @@ public class ReviewController {
     // GET /reviews?filmId={filmId}&count={count}
     @GetMapping
     public List<Review> getReviews(
-                @RequestParam(required = false) Integer filmId,
+                @RequestParam(required = false) Long filmId,
                 @RequestParam(defaultValue = "10") int count) {
         log.info("Получен GET-запрос: /reviews?filmId={}&count={}", filmId, count);
 

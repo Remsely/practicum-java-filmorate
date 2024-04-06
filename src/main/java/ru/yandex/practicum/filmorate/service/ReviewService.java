@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.feed.FeedEventType;
@@ -15,6 +16,7 @@ import ru.yandex.practicum.filmorate.storage.review.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -37,16 +39,20 @@ public class ReviewService {
     }
 
     public Review addReview(Review review) {
+        validation(review);
+        checkUserExists(review.getUserId());
         long userId = review.getUserId();
         long filmId = review.getFilmId();
 
         checkUserExists(userId);
         checkFilmExists(review.getFilmId());
-
-        Review savedReview = reviewStorage.add(review);
+        Optional<Review> savedReview = reviewStorage.add(review);
+        if (savedReview.isEmpty()) {
+            throwReviewNotExists(review.getId());
+        }
         log.info("Отзыв добавлен: {}", savedReview);
 
-        long reviewId = savedReview.getReviewId();
+        long reviewId = savedReview.get().getId();
         FeedEventType eventType = FeedEventType.REVIEW;
         FeedOperation operation = FeedOperation.ADD;
 
@@ -56,23 +62,24 @@ public class ReviewService {
                         "userId = {}, entityId = {}, eventType = {}, operation = {}",
                 userId, filmId, userId, reviewId, eventType, operation
         );
-        return savedReview;
+        return savedReview.get();
     }
 
     // При обновлении отзыва проверка на валидность фильма и пользователя не производится,
     // т.к. пользователь может редактировать только свой отзыв на тот фильм, на который
     // был написан отзыв
     public Review updateReview(Review review) {
-        long reviewId = review.getReviewId();
+        long reviewId = review.getId();
         long filmId = review.getFilmId();
 
-        Review savedReview = reviewStorage.update(review);
-        if (savedReview == null) {
-            throwReviewNotExists(reviewId);
+        validation(review);
+        Optional<Review> savedReview = reviewStorage.update(review);
+        if (savedReview.isEmpty()) {
+            throwReviewNotExists(review.getId());
         }
         log.info("Отзыв обновлен: {}", savedReview);
 
-        long userId = savedReview.getUserId();
+        long userId = savedReview.get().getUserId();
 
         FeedEventType eventType = FeedEventType.REVIEW;
         FeedOperation operation = FeedOperation.UPDATE;
@@ -83,7 +90,7 @@ public class ReviewService {
                         "userId = {}, entityId = {}, eventType = {}, operation = {}",
                 userId, filmId, userId, reviewId, eventType, operation
         );
-        return savedReview;
+        return savedReview.get();
     }
 
     public void deleteReview(long id) {
@@ -107,12 +114,12 @@ public class ReviewService {
     }
 
     public Review getReview(long id) {
-        Review review = reviewStorage.getReview(id);
-        if (review == null) {
+        Optional<Review> review = reviewStorage.getReview(id);
+        if (review.isEmpty()) {
             throwReviewNotExists(id);
         }
         log.info("Получен отзыв с id {}. Review: {}", id, review);
-        return review;
+        return review.get();
     }
 
     public List<Review> getAllReviews(int count) {
@@ -183,4 +190,20 @@ public class ReviewService {
         throw new EntityNotFoundException(
                 new ErrorResponse("Review id", String.format("Не найден отзыв с ID: %d.", reviewId)));
     }
+
+    private void validation(Review review) {
+        if (review.getContent() == null || review.getContent().isBlank()) {
+            throw new ValidationException("Не заполнено содержание отзыва");
+        }
+        if (review.getUserId() == null) {
+            throw new ValidationException("Не указан код пользователя");
+        }
+        if (review.getFilmId() == null) {
+            throw new ValidationException("Не указан код фильма");
+        }
+        if (review.getIsPositive() == null) {
+            throw new ValidationException("Не указан тип отзыва");
+        }
+    }
+
 }

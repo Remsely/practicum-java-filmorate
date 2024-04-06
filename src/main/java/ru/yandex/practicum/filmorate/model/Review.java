@@ -10,7 +10,8 @@ import javax.validation.constraints.NotNull;
 @Data
 @Builder
 public class Review {
-    private long reviewId;
+    @JsonProperty("reviewId")
+    private Long id;
 
     @NotNull
     @NotBlank(message = "Описание не может быть пустым")
@@ -27,5 +28,5 @@ public class Review {
     private Boolean isPositive;
 
     // Расчетное значение полезности отзыва
-    long useful;
+    private Long useful;
 }
