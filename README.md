@@ -10,17 +10,18 @@ Restful API back-end сервис для приложения любителей
 1. [Стэк технологий](#стэк-технологий)
 2. [Функционал](#функционал)
 3. [ER-диаграмма](#er-диаграмма)
-4. [Описание ER-диаграммы](#описание-er-диаграммы)
-5. [Файлы базы данных](#файлы-базы-данных)
+4. [Файлы базы данных](#файлы-базы-данных)
 6. [SQL-запросы](#sql-запросы)
 7. [Ограничения полей (валидация данных)](#ограничения-полей-валидация-данных)
 8. [Пошаговая инструкция по установке проекта](#пошаговая-инструкция-по-установке-проекта)
+9. [Авторы](#авторы)
 
 
 ## Стэк технологий
 Java 11, Spring Boot, Maven, Lombok, Junit, JDBC, SQL, H2
 
-## Функционал (endpoints)
+## Функционал
+### EndPoints:
 ### Фильмы:
 + GET /films - Получить все фильмы;
 + GET /films/{id} - Получить фильм;
@@ -71,103 +72,7 @@ Java 11, Spring Boot, Maven, Lombok, Junit, JDBC, SQL, H2
 
 ## ER-диаграмма
 
-![img.png](src/main/resources/DB_diagram.jpeg)
-
-## Описание ER-диаграммы
-
-### Фильмы
-<details>
-<summary>Таблица film</summary>
-
-| Поле        | Тип(кол-во символов) | Ключ             | Ограничения | Описание                                 |
-|-------------|----------------------|------------------|-------------|------------------------------------------|
-| film_id     | integer              | PK (PRIMARY KEY) |             | идентификатор фильма                     |
-| name        | varchar(40)          |                  | NOT NULL    | название                                 |
-| description | varchar(200)         |                  |             | описание                                 |
-| release     | timestamp            |                  | NOT NULL    | дата выхода                              |
-| duration    | integer              |                  | NOT NULL    | продолжительность                        |
-| rating_id   | integer              | FK (FOREIGN KEY) | NOT NULL    | идентификатор рэйтинга по возрасту (MPA) |
-
-</details>
-
-### Возрастной рейтинг
-<details>
-<summary>Таблица mpa_rating</summary>
-
-</details>
-
-### Жанры
-<details>
-<summary>Таблица genre</summary>
-
-</details>
-
-### Жанры фильма
-<details>
-<summary>Таблица film_genre</summary>
-
-</details>
-
-### Пользователи
-<details>
-<summary>Таблица user_data</summary>
-
-</details>
-
-### Лайки фильмов
-<details>
-<summary>Таблица like_film</summary>
-
-</details>
-
-### Друзья
-<details>
-<summary>Таблица follow</summary>
-
-</details>
-
-### Режиссер
-<details>
-<summary>Таблица director</summary>
-
-</details>
-
-### Фильмы режиссера
-<details>
-<summary>Таблица film_director</summary>
-
-</details>
-
-### Отзывы
-<details>
-<summary>Таблица review</summary>
-
-</details>
-
-### Лайки отзывов
-<details>
-<summary>Таблица like_review</summary>
-
-</details>
-
-### История событий
-<details>
-<summary>Таблица user_event</summary>
-
-</details>
-
-### Операции событий
-<details>
-<summary>Таблица user_event</summary>
-
-</details>
-
-### Тип событий
-<details>
-<summary>Таблица type_event</summary>
-
-</details>
-
+![img.png](docs/DB_diagram.png)
 
 ## Файлы базы данных
 
@@ -177,11 +82,11 @@ Java 11, Spring Boot, Maven, Lombok, Junit, JDBC, SQL, H2
 
 ## SQL-запросы
 
-
 ### Фильмы
 <details>
 <summary>Таблица film</summary>
 
+Примеры:
 - Получить все фильмы
 ```sql
 SELECT * 
@@ -265,7 +170,8 @@ FROM film WHERE film_id = ?;
 <details>
 <summary>Таблица mpa_rating</summary>
 
-- Получить все рейтинги фильмов 
+Примеры:
+- Получить все рейтинги фильмов
 ```sql
 SELECT * 
 FROM mpa_rating;
@@ -289,6 +195,7 @@ WHERE rating_id = ?;
 <details>
 <summary>Таблица genre</summary>
 
+Примеры:
 - Получить все жанры
 ```sql
 SELECT * 
@@ -318,6 +225,7 @@ WHERE genre_id = ?;
 <details>
 <summary>Таблица film_genre</summary>
 
+Примеры:
 - Получить жанр фильма
 ```sql
 SELECT genre_id 
@@ -351,6 +259,7 @@ WHERE film_id = ?;
 <details>
 <summary>Таблица user_data</summary>
 
+Примеры:
 - Добавить пользователя
 ```sql
 INSERT INTO user_data (name, login, email, birthday) 
@@ -388,6 +297,7 @@ WHERE user_id = ?;
 <details>
 <summary>Таблица like_film</summary>
 
+Примеры:
 - Получить лайки пользователя
 ```sql
 SELECT user_id 
@@ -409,8 +319,9 @@ WHERE film_id = ? AND user_id = ?;
 <details>
 <summary>Таблица follow</summary>
 
+Примеры:
 - Добавить в друзья
-В друзьях
+  В друзьях
 ```sql
 UPDATE follow 
 SET approved = ? 
@@ -422,7 +333,7 @@ INSERT INTO follow (target_id, follower_id, approved)
 VALUES (?, ?, ?);
 ```
 - Удалить из друзей
-В друзьях пользователя
+  В друзьях пользователя
 ```sql
 DELETE FROM follow 
 WHERE target_id = ? AND follower_id = ?;
@@ -498,6 +409,7 @@ WHERE target_id = ? AND follower_id = ? AND approved = ?;
 <details>
 <summary>Таблица director</summary>
 
+Примеры:
 - Получить всех режиссеров
 ```sql
 SELECT * 
@@ -536,6 +448,7 @@ WHERE director_id = ?;
 <details>
 <summary>Таблица film_director</summary>
 
+Примеры:
 - Получить всех режиссеров фильма
 ```sql
 SELECT * 
@@ -564,6 +477,7 @@ WHERE director_id = ? AND film_id = ?;
 <details>
 <summary>Таблица review</summary>
 
+Примеры:
 - Добавить отзыв
 ```sql
 INSERT INTO review (content, user_id, film_id, is_positive) 
@@ -622,6 +536,7 @@ WHERE review_id = ?;
 <details>
 <summary>Таблица like_review</summary>
 
+Примеры:
 - Добавить лайк отзыву
 ```sql
 MERGE INTO like_review (user_id, review_id, usefull) 
@@ -647,27 +562,69 @@ DELETE FROM like_review WHERE user_id = ? AND review_id = ?
 <details>
 <summary>Таблица user_event</summary>
 
-- ///////////
+- Получить ленту событий пользователя
 ```sql
-
+SELECT f.event_id, 
+        f.user_id,
+        f.entity_id, 
+        f.time, o.name 
+    AS operation_name, et.name 
+    AS type_name 
+FROM feed f 
+JOIN event_operation eo ON f.operation_id = eo.operation_id 
+JOIN event_type et ON f.type_id = et.type_id 
+WHERE f.user_id = ? 
+ORDER BY f.time;
 ```
 </details>
 
-### Операции событий
+### Поиск
 <details>
 <summary>Таблица user_event</summary>
 
-- ///////////
+Примеры:
+- По популярности
 ```sql
-
+SELECT * 
+FROM film_director 
+WHERE film_id = ?;
+```
+- По режиссерам
+```sql
+SELECT * 
+FROM director 
+WHERE LOWER(name) LIKE ?;
+```
+- По году
+```sql
+SELECT film.film_id 
+FROM film 
+JOIN film_director ON film.film_id = film_director.film_id 
+WHERE film_director.director_id = ? 
+ORDER BY film.release;
+```
+- По лайкам
+```sql
+SELECT film.film_id 
+FROM film 
+JOIN film_director ON film.film_id = film_director.film_id 
+LEFT JOIN like_film ON film.film_id = like_film.film_id 
+WHERE film_director.director_id = ? 
+GROUP BY film.film_id 
+ORDER BY COUNT(like_film.film_id) DESC;
 ```
 </details>
 
-### Тип событий
+### Популярность фильмов
 <details>
-<summary>Таблица type_event</summary>
+<summary>Таблица user_event</summary>
 
-- ///////////
+Примеры:
+- По жанру
+```sql
+
+```
+- За указаный год
 ```sql
 
 ```
@@ -676,7 +633,28 @@ DELETE FROM like_review WHERE user_id = ? AND review_id = ?
 
 ## Ограничения полей (валидация данных)
 
-- ............... написать
+### Users (пользователи)
+- "user_id" может быть только положительным;
+- "email" не может быть пустым, не может содержать пробелы. Пример: example@example.example;
+- "login" не может быть пустым;
+- "name" может быть не заполнен, при этом будет использован email адрес;
+- "birthday" не может быть пустым, не может быть в будущем;
+
+### Films (фильмы)
+- "film_id" может быть только положительным;
+- "name" не может быть пустым;
+- "description" не может быть пустым, минимальная длина описания - 1 символ, максимальная длина описания — 200 символов;
+- "release" не может быть пустым, дата релиза фильма — не раньше 28 декабря 1895 года;
+- "duration" не может быть пустым, продолжительность фильма должна быть положительной;
+- "rating_id" возрастной рейтинг не может быть пустым;
+
+### Review (отзывы)
+- "content" описание не может быть пустым;
+- "userId" не может быть пустым;
+- "filmId" не может быть пустым;
+
+### Director (режиссер)
+- "name" имя не может быть пустым.
 
 ## Пошаговая инструкция по установке проекта
 
@@ -702,3 +680,6 @@ git clone https://github.com/Remsely/java-filmorate.git
 ```
 mvn spring-boot:run
 ```
+
+## Авторы
+- "Remsely", "4IPE·he/him", "SidyakinV", "KoryRunoMain", "Anastasia-star-star" 
