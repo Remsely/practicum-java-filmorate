@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.feed.FeedEntity;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -48,6 +49,17 @@ public class InMemoryUserStorage implements UserStorage {
         return data.get(id);
     }
 
+    // Добавлен так как есть в интерфейсе "UserStorage"
+    @Override
+    public void delete(long id) {
+        if (this.notContainUser(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
+            );
+        }
+        data.remove(id);
+    }
+
     @Override
     public List<User> getAll() {
         return new ArrayList<>(data.values());
@@ -90,6 +102,11 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<Long> getLikes(long id) {
+        return null;
+    }
+
+    @Override
+    public List<FeedEntity> getFeed(long id) {
         return null;
     }
 

@@ -5,6 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.feed.FeedEntity;
+import ru.yandex.practicum.filmorate.model.feed.FeedEventType;
+import ru.yandex.practicum.filmorate.model.feed.FeedOperation;
+import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
@@ -13,10 +17,13 @@ import java.util.List;
 @Service
 public class UserService {
     private final UserStorage userStorage;
+    private final FeedStorage feedStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
+                       @Qualifier("feedDbStorage") FeedStorage feedStorage) {
         this.userStorage = userStorage;
+        this.feedStorage = feedStorage;
     }
 
     public User addUser(User user) {
@@ -40,6 +47,11 @@ public class UserService {
         return user;
     }
 
+    public void deleteUser(long id) {
+        userStorage.delete(id);
+        log.info("Пользователь удален id: {}", id);
+    }
+
     public List<User> getAllUsers() {
         List<User> users = userStorage.getAll();
         log.info("Получен список всех пользователей. List<User>: {}", users);
@@ -51,6 +63,16 @@ public class UserService {
         log.info("Сохранена заявка на добавление в друзья пользователю с id {} от пользователя с id {}. " +
                         "User (id: {}): {}",
                 id, followerId, id, user);
+
+        FeedEventType eventType = FeedEventType.FRIEND;
+        FeedOperation operation = FeedOperation.ADD;
+
+        feedStorage.add(id, followerId, eventType, operation);
+        log.debug(
+                "Заявка на добавление пользователя с id {} в друзья пользователем с id {} добавлена в таблицу feed. " +
+                        "userId = {}, entityId = {}, eventType = {}, operation = {}",
+                id, followerId, followerId, id, eventType, operation
+        );
         return user;
     }
 
@@ -59,6 +81,16 @@ public class UserService {
         log.info("Удалена заявка на добавление в друзья пользователю с id {} от пользователя с id {}. " +
                         "User (id: {}): {}",
                 id, followerId, id, user);
+
+        FeedEventType eventType = FeedEventType.FRIEND;
+        FeedOperation operation = FeedOperation.REMOVE;
+
+        feedStorage.add(id, followerId, eventType, operation);
+        log.debug(
+                "Удаление пользователя с id {} из друзей пользователя с id {} добавлено в таблицу feed. " +
+                        "userId = {}, entityId = {}, eventType = {}, operation = {}",
+                id, followerId, followerId, id, eventType, operation
+        );
         return user;
     }
 
@@ -72,5 +104,12 @@ public class UserService {
         List<User> friends = userStorage.getCommonFriends(id, otherId);
         log.info("Получен список общих друзей пользователей с id {} и {}. List<User>: {}", id, otherId, friends);
         return friends;
+    }
+
+    public List<FeedEntity> getUserFeed(long userId) {
+        List<FeedEntity> feed = userStorage.getFeed(userId);
+        log.info("Получен список последних событий на платформе для пользователя с id {}. List<FeedEntity>: {}",
+                userId, feed);
+        return userStorage.getFeed(userId);
     }
 }

@@ -48,6 +48,21 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public void delete(long id) {
+        if (this.notContainFilm(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
+            );
+        }
+        data.remove(id);
+    }
+
+    @Override
+    public List<Film> getAll() {
+        return new ArrayList<>(data.values());
+    }
+
+    @Override
     public Film addLike(long id, long userId) {
         Film film = this.get(id);
         film.getLikes().add(userId);
@@ -77,11 +92,6 @@ public class InMemoryFilmStorage implements FilmStorage {
             );
         }
         return data.get(id).getLikes();
-    }
-
-    @Override
-    public List<Film> getAll() {
-        return new ArrayList<>(data.values());
     }
 
     @Override

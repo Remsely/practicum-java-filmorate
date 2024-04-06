@@ -9,6 +9,9 @@ import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.feed.FeedEventType;
+import ru.yandex.practicum.filmorate.model.feed.FeedOperation;
+import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -22,15 +25,18 @@ import java.util.stream.Collectors;
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final FeedStorage feedStorage;
     private final DirectorStorage directorStorage;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
                        @Qualifier("userDbStorage") UserStorage userStorage,
-                       @Qualifier("directorDbStorage") DirectorStorage directorStorage) {
+                       @Qualifier("directorDbStorage") DirectorStorage directorStorage,
+                       @Qualifier("feedDbStorage") FeedStorage feedStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.directorStorage = directorStorage;
+        this.feedStorage = feedStorage;
     }
 
     public Film addFilm(Film film) {
@@ -51,6 +57,11 @@ public class FilmService {
         return film;
     }
 
+    public void deleteFilm(long id) {
+        filmStorage.delete(id);
+        log.info("Фильм удален id: {}", id);
+    }
+
     public List<Film> getAllFilms() {
         List<Film> films = filmStorage.getAll();
         log.info("Получен список всех фильмов. List<Film>: {}", films);
@@ -63,8 +74,19 @@ public class FilmService {
                     new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
             );
         }
+
         Film film = filmStorage.addLike(id, userId);
         log.info("Добавлен лайк фильму с id {} от пользователя с id {}. Film: {}", id, userId, film);
+
+        FeedEventType eventType = FeedEventType.LIKE;
+        FeedOperation operation = FeedOperation.ADD;
+
+        feedStorage.add(userId, id, eventType, operation);
+        log.debug(
+                "Лайк пользователя с id {} фильму с id {} добавлен в таблицу feed. " +
+                        "userId = {}, entityId = {}, eventType = {}, operation = {}",
+                userId, id, userId, id, eventType, operation
+        );
         return film;
     }
 
@@ -76,6 +98,16 @@ public class FilmService {
         }
         Film film = filmStorage.removeLike(id, userId);
         log.info("Удален лайк фильму с id {} от пользователя с id {}. Film: {}", id, userId, film);
+
+        FeedEventType eventType = FeedEventType.LIKE;
+        FeedOperation operation = FeedOperation.REMOVE;
+
+        feedStorage.add(userId, id, eventType, operation);
+        log.debug(
+                "Удаление лайка фильму с id {} пользователя с id {} добавлено в таблицу feed. " +
+                        "userId = {}, entityId = {}, eventType = {}, operation = {}",
+                id, userId, userId, id, eventType, operation
+        );
         return film;
     }
 

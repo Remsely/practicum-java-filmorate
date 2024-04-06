@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.feed.FeedEntity;
 
 import java.util.List;
 
@@ -10,6 +11,8 @@ public interface UserStorage {
     User update(User user);
 
     User get(long id);
+
+    void delete(long id);
 
     List<User> getAll();
 
@@ -22,6 +25,8 @@ public interface UserStorage {
     List<User> getCommonFriends(long id, long otherId);
 
     List<Long> getLikes(long id);
+
+    List<FeedEntity> getFeed(long id);
 
     boolean notContainUser(long id);
 }
