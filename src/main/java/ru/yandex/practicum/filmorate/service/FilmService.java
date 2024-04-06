@@ -105,11 +105,12 @@ public class FilmService {
 
     //Поиск
     public List<Film> search(String query, List<String> by) {
-        if (by.get(0).equals(String.valueOf(ChoosingSearch.title))) {
+        int len = by.size();
+        if (len==1 && by.get(0).equals(String.valueOf(ChoosingSearch.title))) {
             List<Film> films = filmStorage.getFilmWithName(query);
             logQueryInfo(query, by, films);
             return films;
-        } else if (by.get(0).equals(String.valueOf(ChoosingSearch.director))) {
+        } else if (len==1 && by.get(0).equals(String.valueOf(ChoosingSearch.director))) {
             List<Director> director = directorStorage.getDirectorsWithName(query);
             List<Film> films = new ArrayList<>();
             for (Director dir : director) {
