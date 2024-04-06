@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Component
@@ -19,10 +20,10 @@ public class ReviewDbStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public Review add(Review review) {
+    public Optional<Review> add(Review review) {
         String sqlQuery =
                 "INSERT INTO review (content, user_id, film_id, is_positive) " +
-                        "values (?, ?, ?, ?)";
+                        "VALUES (?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
@@ -39,14 +40,14 @@ public class ReviewDbStorage {
         return getReview(id);
     }
 
-    public Review update(Review review) {
+    public Optional<Review> update(Review review) {
         String sqlQuery =
                 "UPDATE review SET content = ?, is_positive = ? WHERE review_id = ?";
         jdbcTemplate.update(sqlQuery,
                 review.getContent(),
                 review.getIsPositive(),
-                review.getReviewId());
-        return getReview(review.getReviewId());
+                review.getId());
+        return getReview(review.getId());
     }
 
     public boolean delete(long id) {
@@ -55,14 +56,14 @@ public class ReviewDbStorage {
         return jdbcTemplate.update(sqlQuery, id) > 0;
     }
 
-    public Review getReview(long id) {
+    public Optional<Review> getReview(long id) {
         String sqlQuery = getBaseCommand() +
                 "WHERE review_id = ?";
         SqlRowSet rows = jdbcTemplate.queryForRowSet(sqlQuery, id);
         if (rows.next()) {
-            return mapRowToReview(rows);
+            return Optional.of(mapRowToReview(rows));
         }
-        return null;
+        return Optional.empty();
     }
 
     public List<Review> getAllReviews(int count) {
@@ -135,7 +136,7 @@ public class ReviewDbStorage {
 
     private Review mapRowToReview(SqlRowSet rs) {
         return Review.builder()
-                .reviewId(rs.getLong("review_id"))
+                .id(rs.getLong("review_id"))
                 .content(rs.getString("content"))
                 .userId(rs.getLong("user_id"))
                 .filmId(rs.getLong("film_id"))

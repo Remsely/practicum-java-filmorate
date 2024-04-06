@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.review.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -37,9 +38,12 @@ public class ReviewService {
         validation(review);
         checkUserExists(review.getUserId());
         checkFilmExists(review.getFilmId());
-        Review savedReview = reviewStorage.add(review);
+        Optional<Review> savedReview = reviewStorage.add(review);
+        if (savedReview.isEmpty()) {
+            throwReviewNotExists(review.getId());
+        }
         log.info("Отзыв добавлен: {}", savedReview);
-        return savedReview;
+        return savedReview.get();
     }
 
     // При обновлении отзыва проверка на валидность фильма и пользователя не производится,
@@ -47,12 +51,12 @@ public class ReviewService {
     // был написан отзыв
     public Review updateReview(Review review) {
         validation(review);
-        Review savedReview = reviewStorage.update(review);
-        if (savedReview == null) {
-            throwReviewNotExists(review.getReviewId());
+        Optional<Review> savedReview = reviewStorage.update(review);
+        if (savedReview.isEmpty()) {
+            throwReviewNotExists(review.getId());
         }
         log.info("Отзыв обновлен: {}", savedReview);
-        return savedReview;
+        return savedReview.get();
     }
 
     public void deleteReview(long id) {
@@ -63,12 +67,12 @@ public class ReviewService {
     }
 
     public Review getReview(long id) {
-        Review review = reviewStorage.getReview(id);
-        if (review == null) {
+        Optional<Review> review = reviewStorage.getReview(id);
+        if (review.isEmpty()) {
             throwReviewNotExists(id);
         }
         log.info("Получен отзыв с id {}. Review: {}", id, review);
-        return review;
+        return review.get();
     }
 
     public List<Review> getAllReviews(int count) {

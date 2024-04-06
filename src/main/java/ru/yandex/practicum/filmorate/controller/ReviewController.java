@@ -52,17 +52,17 @@ public class ReviewController {
     // GET /reviews?filmId={filmId}&count={count}
     @GetMapping
     public List<Review> getReviews(
-                @RequestParam(defaultValue = "") String filmId,
+                @RequestParam(required = false) Long filmId,
                 @RequestParam(defaultValue = "10") int count) {
         log.info("Получен GET-запрос: /reviews?filmId={}&count={}", filmId, count);
 
         // Для получения списка отзывов здесь используется два метода. Можно было бы использовать один, и передавать
         // Optional-параметр для filmId, однако Idea на такие финты выдает предупреждение.
         // https://www.baeldung.com/java-optional#misuages
-        if (filmId.isBlank()) {
+        if (filmId == null) {
             return reviewService.getAllReviews(count);
         } else {
-            return reviewService.getFilmReviews(Long.parseLong(filmId), count);
+            return reviewService.getFilmReviews(filmId, count);
         }
     }
 
