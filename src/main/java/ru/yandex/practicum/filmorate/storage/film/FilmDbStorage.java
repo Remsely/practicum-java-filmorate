@@ -104,7 +104,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void delete(long id) {
-        if (this.notContainFilm(id) && (id < 0)) {
+        if (this.notContainFilm(id)) {
             throw new EntityNotFoundException(
                     new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
             );

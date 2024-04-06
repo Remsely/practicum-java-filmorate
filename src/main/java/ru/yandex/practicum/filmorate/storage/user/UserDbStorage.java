@@ -73,7 +73,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     public void delete(long id) {
-        if (this.notContainUser(id) && (id < 0)) {
+        if (this.notContainUser(id)) {
             throw new EntityNotFoundException(
                     new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
             );
