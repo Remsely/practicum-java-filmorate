@@ -47,17 +47,15 @@ public class ReviewDbStorage {
                 review.getIsPositive(),
                 review.getId());
         return getReview(review.getId());
-                review.getReviewId());
-        return getReview(review.getReviewId());
     }
 
     public Review delete(long id) {
-        Review review = this.getReview(id).get();
+        Optional<Review> reviewOptional = getReview(id);
 
         String sqlQuery = "DELETE FROM review WHERE review_id = ?";
         jdbcTemplate.update(sqlQuery, id);
 
-        return review;
+        return reviewOptional.orElse(null);
     }
 
     public Optional<Review> getReview(long id) {
