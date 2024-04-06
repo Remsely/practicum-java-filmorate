@@ -106,25 +106,32 @@ public class FilmService {
     //Поиск
     public List<Film> search(String query, List<String> by) {
         int len = by.size();
-        if (len == 1 && by.get(0).equals(String.valueOf(By.TITLE))) {
-            return filmStorage.getFilmWithName(query);
-        } else if (len == 1 && by.get(0).equals(String.valueOf(By.DIRECTOR))) {
+        if (len == 1 && by.get(0).equals(String.valueOf(By.title))) {
+            List<Film> films = filmStorage.getFilmWithName(query);
+            logQueryInfo(query, by, films);
+            return films;
+        } else if (len == 1 && by.get(0).equals(String.valueOf(By.director))) {
             List<Director> director = directorStorage.getDirectorsWithName(query);
             List<Film> films = new ArrayList<>();
             for (Director dir : director) {
                 films.addAll(filmStorage.getDirectorSortedFilms(dir.getId(), "likes"));
             }
+            logQueryInfo(query, by, films);
             return films;
         } else {
-            List<Film> films = filmStorage.getFilmWithName(query);
-            List<Director> directors = directorStorage.getDirectorsWithName(query);
-            for (Director dir : directors) {
-                films.addAll(filmStorage.getDirectorSortedFilms(dir.getId(), "likes"));
-            }
+            List<Film> films = new ArrayList<>();
+
+            directorStorage.getDirectorsWithName(query).forEach(
+                    director -> films.addAll(filmStorage.getDirectorSortedFilms(director.getId(), "likes"))
+            );
+            films.addAll(filmStorage.getFilmWithName(query));
+
+            logQueryInfo(query, by, films);
             return films;
         }
-
-
     }
 
+    private void logQueryInfo(String query, List<String> by, List<Film> films) {
+        log.info("Получен список фильмов по запросу '{}'. Поиск по {}: list: {}", query, by, films);
+    }
 }

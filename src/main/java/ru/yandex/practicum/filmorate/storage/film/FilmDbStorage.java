@@ -13,9 +13,11 @@ import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MPAStorage;
 
-import java.sql.Date;
 import java.sql.*;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Component
@@ -161,8 +163,8 @@ public class FilmDbStorage implements FilmStorage {
     //получение фильма по имени
     @Override
     public List<Film> getFilmWithName(String name) {
-        String nameStr = "%" + name + "%";
-        String sqlQuery = "SELECT * FROM film WHERE name LIKE ?";
+        String nameStr = "%" + name.toLowerCase() + "%";
+        String sqlQuery = "SELECT * FROM film WHERE LOWER(name) LIKE ?";
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, nameStr);
     }
 
@@ -175,7 +177,7 @@ public class FilmDbStorage implements FilmStorage {
             );
         }
 
-        String sqlQuery = "";
+        String sqlQuery;
         if ("year".equals(sortBy)) {
             sqlQuery = "SELECT film.film_id " +
                     "FROM film " +

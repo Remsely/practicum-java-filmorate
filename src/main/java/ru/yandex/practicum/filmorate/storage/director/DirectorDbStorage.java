@@ -110,8 +110,8 @@ public class DirectorDbStorage implements DirectorStorage {
     //поиск режисера по имени
     @Override
     public List<Director> getDirectorsWithName(String name) {
-        String nameStr = "%" + name + "%";
-        String sqlQuery = "SELECT * FROM director WHERE name LIKE ?";
+        String nameStr = "%" + name.toLowerCase() + "%";
+        String sqlQuery = "SELECT * FROM director WHERE LOWER(name) LIKE ?";
         return jdbcTemplate.query(sqlQuery, this::mapRowDirector, nameStr);
     }
 
