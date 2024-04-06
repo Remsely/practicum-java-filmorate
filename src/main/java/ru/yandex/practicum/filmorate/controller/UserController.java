@@ -38,6 +38,12 @@ public class UserController {
         return userService.getUser(id);
     }
 
+    @DeleteMapping(value = "/{userId}")
+    public void deleteUser(@PathVariable long userId) {
+        log.info("Получен DELETE-запрос к /users/{}.", userId);
+        userService.deleteUser(userId);
+    }
+
     @GetMapping
     public List<User> getUsers() {
         log.info("Получен GET-запрос к /users.");

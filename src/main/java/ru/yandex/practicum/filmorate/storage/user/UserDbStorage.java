@@ -72,6 +72,15 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.queryForObject(filmSqlQuery, this::mapRowToUser, id);
     }
 
+    public void delete(long id) {
+        if (this.notContainUser(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
+            );
+        }
+        String sqlQuery = "DELETE FROM user_data WHERE user_id = " + id;
+        jdbcTemplate.execute(sqlQuery);
+    }
 
     @Override
     public List<User> getAll() {

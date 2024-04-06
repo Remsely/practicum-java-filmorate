@@ -38,6 +38,12 @@ public class FilmController {
         return filmService.getFilm(id);
     }
 
+    @DeleteMapping(value = "/{filmId}")
+    public void deleteFilm(@PathVariable long filmId) {
+        log.info("Получен DELETE-запрос к /films/{}.", filmId);
+        filmService.deleteFilm(filmId);
+    }
+
     @GetMapping
     public List<Film> getFilms() {
         log.info("Получен GET-запрос к /films.");
@@ -69,7 +75,6 @@ public class FilmController {
         return filmService.getCommonFilm(userId, userId);
     }
 
-    // DIRECTOR.Получить список фильмов режиссера отсортированных по количеству лайков или году выпуска.
     @GetMapping("/director/{id}")
     public List<Film> getDirectorFilms(@PathVariable long id,
                                        @RequestParam(defaultValue = "likes") String sortBy) {
