@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.feed.FeedEntity;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -101,6 +102,11 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<Long> getLikes(long id) {
+        return null;
+    }
+
+    @Override
+    public List<FeedEntity> getFeed(long id) {
         return null;
     }
 

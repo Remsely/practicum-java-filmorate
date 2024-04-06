@@ -17,7 +17,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Component
 public class ReviewDbStorage {
-
     private final JdbcTemplate jdbcTemplate;
 
     public Optional<Review> add(Review review) {
@@ -50,10 +49,13 @@ public class ReviewDbStorage {
         return getReview(review.getId());
     }
 
-    public boolean delete(long id) {
-        String sqlQuery =
-                "DELETE FROM review WHERE review_id = ?";
-        return jdbcTemplate.update(sqlQuery, id) > 0;
+    public Review delete(long id) {
+        Optional<Review> reviewOptional = getReview(id);
+
+        String sqlQuery = "DELETE FROM review WHERE review_id = ?";
+        jdbcTemplate.update(sqlQuery, id);
+
+        return reviewOptional.orElse(null);
     }
 
     public Optional<Review> getReview(long id) {
@@ -144,5 +146,4 @@ public class ReviewDbStorage {
                 .useful(rs.getLong("useful"))
                 .build();
     }
-
 }

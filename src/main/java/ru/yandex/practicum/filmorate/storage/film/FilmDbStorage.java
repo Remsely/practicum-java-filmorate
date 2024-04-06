@@ -64,11 +64,8 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film update(Film film) {
         long id = film.getId();
-        if (this.notContainFilm(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
-            );
-        }
+        checkFilmExist(id);
+
         String sqlQuery =
                 "UPDATE film " +
                         "SET name = ?, " +
@@ -93,11 +90,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film get(long id) {
-        if (this.notContainFilm(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
-            );
-        }
+        checkFilmExist(id);
         String filmSqlQuery = "SELECT * FROM film WHERE film_id = ?";
         return jdbcTemplate.queryForObject(filmSqlQuery, this::mapRowToFilm, id);
     }
@@ -121,11 +114,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film addLike(long id, long userId) {
-        if (this.notContainFilm(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
-            );
-        }
+        checkFilmExist(id);
         String sqlQuery = "INSERT INTO like_film (film_id, user_id) VALUES (?, ?)";
         jdbcTemplate.update(sqlQuery, id, userId);
         return this.get(id);
@@ -133,11 +122,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film removeLike(long id, long userId) {
-        if (this.notContainFilm(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
-            );
-        }
+        checkFilmExist(id);
         String sqlQuery = "DELETE FROM like_film WHERE film_id = ? AND user_id = ?";
         jdbcTemplate.update(sqlQuery, id, userId);
         return this.get(id);
@@ -160,11 +145,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Set<Long> getLikes(long id) {
-        if (this.notContainFilm(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
-            );
-        }
+        checkFilmExist(id);
         String sqlQuery = "SELECT user_id FROM like_film WHERE film_id = ?";
         return (new HashSet<>(jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getLong("user_id"), id)));
     }
@@ -178,7 +159,7 @@ public class FilmDbStorage implements FilmStorage {
             );
         }
 
-        String sqlQuery = "";
+        String sqlQuery;
         if ("year".equals(sortBy)) {
             sqlQuery = "SELECT film.film_id " +
                     "FROM film " +
@@ -223,5 +204,13 @@ public class FilmDbStorage implements FilmStorage {
                 .mpa(mpaStorage.get(rs.getLong("rating_id")))
                 .likes(this.getLikes(id))
                 .build();
+    }
+
+    private void checkFilmExist(long id) {
+        if (this.notContainFilm(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
+            );
+        }
     }
 }
