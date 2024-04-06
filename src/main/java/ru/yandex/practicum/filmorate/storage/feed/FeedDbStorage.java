@@ -21,8 +21,8 @@ public class FeedDbStorage implements FeedStorage {
         jdbcTemplate.update(sqlQuery,
                 userId,
                 entityId,
-                FEED_EVENT_TYPE_DB_INDEXES.get(eventType),
-                FEED_OPERATION_DB_INDEXES.get(operation),
+                this.getEventTypeIndex(eventType),
+                this.getOperationIndex(operation),
                 LocalDateTime.now()
         );
     }
