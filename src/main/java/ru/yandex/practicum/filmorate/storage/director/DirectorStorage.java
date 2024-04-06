@@ -13,6 +13,8 @@ public interface DirectorStorage {
 
     void delete(long id); // Удалить режиссера
 
+    List<Director> getDirectorsWithName(String name);
+
     void deleteFilmDirectors(long id); // Удалить связь фильма с режиссером
 
     List<Director> getAll(); // Получить список всех режиссеров

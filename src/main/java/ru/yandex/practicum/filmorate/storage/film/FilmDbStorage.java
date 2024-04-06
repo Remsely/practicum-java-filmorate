@@ -13,9 +13,11 @@ import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MPAStorage;
 
-import java.sql.Date;
 import java.sql.*;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Component
@@ -148,6 +150,14 @@ public class FilmDbStorage implements FilmStorage {
         checkFilmExist(id);
         String sqlQuery = "SELECT user_id FROM like_film WHERE film_id = ?";
         return (new HashSet<>(jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getLong("user_id"), id)));
+    }
+
+    //получение фильма по имени
+    @Override
+    public List<Film> getFilmWithName(String name) {
+        String nameStr = "%" + name.toLowerCase() + "%";
+        String sqlQuery = "SELECT * FROM film WHERE LOWER(name) LIKE ?";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, nameStr);
     }
 
     // DIRECTOR.Получить список фильмов режиссера отсортированных по количеству лайков или году выпуска

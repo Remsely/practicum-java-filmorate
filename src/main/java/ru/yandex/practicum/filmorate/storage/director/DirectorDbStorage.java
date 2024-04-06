@@ -92,6 +92,14 @@ public class DirectorDbStorage implements DirectorStorage {
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> this.get(rs.getLong("director_id")), id);
     }
 
+    //поиск режисера по имени
+    @Override
+    public List<Director> getDirectorsWithName(String name) {
+        String nameStr = "%" + name.toLowerCase() + "%";
+        String sqlQuery = "SELECT * FROM director WHERE LOWER(name) LIKE ?";
+        return jdbcTemplate.query(sqlQuery, this::mapRowDirector, nameStr);
+    }
+
     // Удалить все связи режиссеров с фильмом
     @Override
     public void deleteFilmDirectors(long filmId) {

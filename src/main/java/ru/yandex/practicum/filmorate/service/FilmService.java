@@ -4,15 +4,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.enumarate.ChoosingSearch;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.feed.FeedEventType;
 import ru.yandex.practicum.filmorate.model.feed.FeedOperation;
 import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,13 +26,16 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final FeedStorage feedStorage;
+    private final DirectorStorage directorStorage;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
                        @Qualifier("userDbStorage") UserStorage userStorage,
+                       @Qualifier("directorDbStorage") DirectorStorage directorStorage,
                        @Qualifier("feedDbStorage") FeedStorage feedStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.directorStorage = directorStorage;
         this.feedStorage = feedStorage;
     }
 
@@ -127,4 +134,37 @@ public class FilmService {
                 "сортировка sortBy: {} list: {}", id, sortBy, films);
         return films;
     }
+
+    //Поиск
+    public List<Film> search(String query, List<String> by) {
+        int len = by.size();
+        if (len == 1 && by.get(0).equals(String.valueOf(ChoosingSearch.title))) {
+            List<Film> films = filmStorage.getFilmWithName(query);
+            logQueryInfo(query, by, films);
+            return films;
+        } else if (len == 1 && by.get(0).equals(String.valueOf(ChoosingSearch.director))) {
+            List<Director> director = directorStorage.getDirectorsWithName(query);
+            List<Film> films = new ArrayList<>();
+            for (Director dir : director) {
+                films.addAll(filmStorage.getDirectorSortedFilms(dir.getId(), "likes"));
+            }
+            logQueryInfo(query, by, films);
+            return films;
+        } else {
+            List<Film> films = new ArrayList<>();
+
+            directorStorage.getDirectorsWithName(query).forEach(
+                    director -> films.addAll(filmStorage.getDirectorSortedFilms(director.getId(), "likes"))
+            );
+            films.addAll(filmStorage.getFilmWithName(query));
+
+            logQueryInfo(query, by, films);
+            return films;
+        }
+    }
+
+    private void logQueryInfo(String query, List<String> by, List<Film> films) {
+        log.info("Получен список фильмов по запросу '{}'. Поиск по {}: list: {}", query, by, films);
+    }
+
 }
