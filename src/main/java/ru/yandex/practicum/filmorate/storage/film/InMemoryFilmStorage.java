@@ -89,6 +89,11 @@ public class InMemoryFilmStorage implements FilmStorage {
         return !data.containsKey(id);
     }
 
+    @Override
+    public List<Film> getFilmWithName(String name) {
+        return null;
+    }
+
     // Добавлен так как есть в интерфейсе "FilmStorage"
     @Override
     public List<Film> getDirectorSortedFilms(long id, String sortBy) {

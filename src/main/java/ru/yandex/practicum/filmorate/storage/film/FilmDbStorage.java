@@ -158,6 +158,14 @@ public class FilmDbStorage implements FilmStorage {
         return (new HashSet<>(jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getLong("user_id"), id)));
     }
 
+    //получение фильма по имени
+    @Override
+    public List<Film> getFilmWithName(String name) {
+        String nameStr = "%" + name + "%";
+        String sqlQuery = "SELECT * FROM film WHERE name LIKE ?";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, nameStr);
+    }
+
     // DIRECTOR.Получить список фильмов режиссера отсортированных по количеству лайков или году выпуска
     @Override
     public List<Film> getDirectorSortedFilms(long directorId, String sortBy) {

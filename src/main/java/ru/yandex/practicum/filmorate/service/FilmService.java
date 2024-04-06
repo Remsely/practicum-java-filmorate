@@ -4,13 +4,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.enumarate.By;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -18,12 +23,15 @@ import java.util.stream.Collectors;
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final DirectorStorage directorStorage;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("userDbStorage") UserStorage userStorage) {
+                       @Qualifier("userDbStorage") UserStorage userStorage,
+                       @Qualifier("directorDbStorage") DirectorStorage directorStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.directorStorage = directorStorage;
     }
 
     public Film addFilm(Film film) {
@@ -95,4 +103,29 @@ public class FilmService {
                 "сортировка sortBy: {} list: {}", id, sortBy, films);
         return films;
     }
+
+    //Поиск
+    public List<Film> search(String query, List<String> by) {
+        int len = by.size();
+        if (len == 1 && by.get(0).equals(String.valueOf(By.TITLE))) {
+            return filmStorage.getFilmWithName(query);
+        } else if (len == 1 && by.get(0).equals(String.valueOf(By.DIRECTOR))) {
+            List<Director> director = directorStorage.getDirectorsWithName(query);
+            List<Film> films = new ArrayList<>();
+            for (Director dir : director) {
+                films.addAll(filmStorage.getDirectorSortedFilms(dir.getId(), "likes"));
+            }
+            return films;
+        } else {
+            List<Film> films = filmStorage.getFilmWithName(query);
+            List<Director> directors = directorStorage.getDirectorsWithName(query);
+            for (Director dir : directors) {
+                films.addAll(filmStorage.getDirectorSortedFilms(dir.getId(), "likes"));
+            }
+            return films;
+        }
+
+
+    }
+
 }

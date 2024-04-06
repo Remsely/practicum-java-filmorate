@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.model.User;
@@ -20,6 +21,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -415,6 +417,42 @@ public class FilmDbStorageTest {
         assertThat(popularFilms.size()).isEqualTo(2);
         assertThat(popularFilms.get(0).getId()).isEqualTo(3L);
         assertThat(popularFilms.get(1).getId()).isEqualTo(1L);
+    }
+
+    @Test
+    public void testGetDirectorsWithName() {
+        Film film1 = Film.builder()
+                .id(1L)
+                .name("Film1")
+                .description("Description1")
+                .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
+                .mpa(new MPA(1L, "G"))
+                .releaseDate(LocalDate.of(2020, 8, 25))
+                .duration(100)
+                .likes(Collections.emptySet())
+                .build();
+
+        Film film2 = Film.builder()
+                .id(2L)
+                .name("Film2")
+                .description("Description2")
+                .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
+                .mpa(new MPA(1L, "G"))
+                .releaseDate(LocalDate.of(2020, 8, 25))
+                .duration(100)
+                .likes(Collections.emptySet())
+                .build();
+        filmStorage.add(film1);
+        filmStorage.add(film2);
+        List<Film> expList = new ArrayList<>();
+        expList.add(film1);
+        List<Film> directorsList = filmStorage.getFilmWithName("1");
+        assertThat(directorsList)
+                .isNotEmpty()
+                .isNotNull()
+                .isEqualTo(expList);
     }
 
     @Test

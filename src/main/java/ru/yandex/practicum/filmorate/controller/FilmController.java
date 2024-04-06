@@ -76,4 +76,10 @@ public class FilmController {
         log.info("Получен GET-запрос к films/director/{directorId}?sortBy={}", sortBy);
         return filmService.getDirectorFilmsList(id, sortBy);
     }
+
+    @GetMapping("/search")
+    public List<Film> search(@RequestParam(name = "query", required = true) String query, @RequestParam(name = "by", defaultValue = "title") List<String> by) {
+        log.info("Получен GET-запрос к /films/search?query=" + query + "&by=" + by);
+        return filmService.search(query, by);
+    }
 }
