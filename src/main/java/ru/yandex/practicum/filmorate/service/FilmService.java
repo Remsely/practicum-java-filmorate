@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.enumarate.By;
+import ru.yandex.practicum.filmorate.model.enumarate.ChoosingSearch;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
@@ -105,12 +105,11 @@ public class FilmService {
 
     //Поиск
     public List<Film> search(String query, List<String> by) {
-        int len = by.size();
-        if (len == 1 && by.get(0).equals(String.valueOf(By.title))) {
+        if (by.get(0).equals(String.valueOf(ChoosingSearch.title))) {
             List<Film> films = filmStorage.getFilmWithName(query);
             logQueryInfo(query, by, films);
             return films;
-        } else if (len == 1 && by.get(0).equals(String.valueOf(By.director))) {
+        } else if (by.get(0).equals(String.valueOf(ChoosingSearch.director))) {
             List<Director> director = directorStorage.getDirectorsWithName(query);
             List<Film> films = new ArrayList<>();
             for (Director dir : director) {
@@ -134,4 +133,5 @@ public class FilmService {
     private void logQueryInfo(String query, List<String> by, List<Film> films) {
         log.info("Получен список фильмов по запросу '{}'. Поиск по {}: list: {}", query, by, films);
     }
+
 }

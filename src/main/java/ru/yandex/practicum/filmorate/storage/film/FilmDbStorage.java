@@ -177,7 +177,7 @@ public class FilmDbStorage implements FilmStorage {
             );
         }
 
-        String sqlQuery;
+        String sqlQuery = "";
         if ("year".equals(sortBy)) {
             sqlQuery = "SELECT film.film_id " +
                     "FROM film " +

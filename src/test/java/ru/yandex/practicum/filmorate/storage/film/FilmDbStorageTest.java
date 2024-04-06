@@ -422,7 +422,7 @@ public class FilmDbStorageTest {
     public void testGetDirectorsWithName() {
         Film film1 = Film.builder()
                 .id(1L)
-                .name("Film1")
+                .name("Film1TestYes")
                 .description("Description1")
                 .genres(Collections.emptyList())
                 .directors(Collections.emptyList())
@@ -447,7 +447,7 @@ public class FilmDbStorageTest {
         filmStorage.add(film2);
         List<Film> expList = new ArrayList<>();
         expList.add(film1);
-        List<Film> directorsList = filmStorage.getFilmWithName("1");
+        List<Film> directorsList = filmStorage.getFilmWithName("teSTyEs");
         assertThat(directorsList)
                 .isNotEmpty()
                 .isNotNull()

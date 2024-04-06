@@ -133,7 +133,7 @@ public class DirectorDbStorageTest {
         directorStorage.add(director2);
         List<Director> expList = new ArrayList<>();
         expList.add(director);
-        List<Director> directorsList = directorStorage.getDirectorsWithName("Mega");
+        List<Director> directorsList = directorStorage.getDirectorsWithName("meGA");
         assertThat(directorsList)
                 .isNotEmpty()
                 .isNotNull()
