@@ -157,6 +157,7 @@ public class UserService {
         for (Long filmId : filmsId) {
             films.add(filmStorage.get(filmId));
         }
+
         log.info("Получен списк фильмов List<Film>: {} для пользователя с id {}", films, id);
         return films;
     }
