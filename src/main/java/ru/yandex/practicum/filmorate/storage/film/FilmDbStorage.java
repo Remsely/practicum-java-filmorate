@@ -146,6 +146,42 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getPopularFilmSortedByGenreAndYear(int count, long genreId, Integer year) {
+        String sqlQuery = "SELECT f.* FROM film f " +
+                "LEFT JOIN like_film lf on f.film_id = lf.film_id " +
+                "LEFT JOIN film_genre fg ON f.film_id = fg.film_id " +
+                "WHERE fg.genre_id = ? AND year(f.release) = ? " +
+                "GROUP BY  f.film_id, fg.genre_id " +
+                "ORDER BY COUNT(lf.user_id) DESC " +
+                "LIMIT ?";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, year, count);
+    }
+
+    @Override
+    public List<Film> getPopularFilmSortedByYear(int count, Integer year) {
+        String sqlQuery = "SELECT f.* FROM film f " +
+                "LEFT JOIN like_film lf on f.film_id = lf.film_id " +
+                "WHERE year(f.release) = ? " +
+                "GROUP BY  f.film_id " +
+                "ORDER BY COUNT(lf.user_id) DESC " +
+                "LIMIT ?";
+
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, year, count);
+    }
+
+    @Override
+    public List<Film> getPopularFilmSortedByGenre(int count, long genreId) {
+        String sqlQuery = "SELECT f.* FROM film f " +
+                "LEFT JOIN like_film lf on f.film_id = lf.film_id " +
+                "LEFT JOIN film_genre fg ON f.film_id = fg.film_id " +
+                "WHERE fg.genre_id = ? " +
+                "GROUP BY  f.film_id, fg.genre_id " +
+                "ORDER BY COUNT(lf.user_id) DESC " +
+                "LIMIT ?";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, count);
+    }
+
+    @Override
     public Set<Long> getLikes(long id) {
         checkFilmExist(id);
         String sqlQuery = "SELECT user_id FROM like_film WHERE film_id = ?";
