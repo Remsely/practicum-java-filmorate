@@ -4,26 +4,33 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.model.ErrorResponse;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.feed.FeedEntity;
 import ru.yandex.practicum.filmorate.model.feed.FeedEventType;
 import ru.yandex.practicum.filmorate.model.feed.FeedOperation;
 import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Service
 public class UserService {
     private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
     private final FeedStorage feedStorage;
 
     @Autowired
     public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
-                       @Qualifier("feedDbStorage") FeedStorage feedStorage) {
+                       @Qualifier("feedDbStorage") FeedStorage feedStorage,
+                       @Qualifier("filmDbStorage") FilmStorage filmStorage) {
         this.userStorage = userStorage;
         this.feedStorage = feedStorage;
+        this.filmStorage = filmStorage;
     }
 
     public User addUser(User user) {
@@ -111,5 +118,47 @@ public class UserService {
         log.info("Получен список последних событий на платформе для пользователя с id {}. List<FeedEntity>: {}",
                 userId, feed);
         return userStorage.getFeed(userId);
+    }
+
+    public List<Film> getRecommendations(long id) {
+
+        if (userStorage.notContainUser(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
+            );
+        }
+
+        userStorage.get(id);
+        Map<Long, Set<Long>> usersLikes = userStorage.findUsersWithLikes();
+        Set<Long> userLikeFilms = usersLikes.get(id);
+        usersLikes.remove(id);
+        if (usersLikes.isEmpty() || userLikeFilms == null) {
+            return new ArrayList<>();
+        }
+
+        log.info("Поиск пользователя с наибольшим пересечением");
+        Long userIdWithMaxInters = -1L;
+        int maxInters = -1;
+        for (Long userId : usersLikes.keySet()) {
+            Set<Long> filmsId = new HashSet<>(usersLikes.get(userId));
+            filmsId.retainAll(userLikeFilms);
+            int countInters = filmsId.size();
+            if (maxInters < countInters) {
+                maxInters = countInters;
+                userIdWithMaxInters = userId;
+            }
+        }
+
+        log.info("Фильмы пользователя с наибольшим пересечением");
+        Set<Long> filmsId = usersLikes.get(userIdWithMaxInters);
+        filmsId.removeAll(userLikeFilms);
+
+        List<Film> films = new ArrayList<>();
+        for (Long filmId : filmsId) {
+            films.add(filmStorage.get(filmId));
+        }
+
+        log.info("Получен списк фильмов List<Film>: {} для пользователя с id {}", films, id);
+        return films;
     }
 }

@@ -16,10 +16,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Component
@@ -260,6 +257,21 @@ public class UserDbStorage implements UserStorage {
         String sqlQuery = "SELECT COUNT(*) FROM follow WHERE target_id = ? AND follower_id = ? AND approved = ?";
         Integer count = jdbcTemplate.queryForObject(sqlQuery, Integer.class, targetId, friendId, approved);
         return count != null && count == 1;
+    }
+
+    public Map<Long, Set<Long>> findUsersWithLikes() {
+        Map<Long, Set<Long>> usersLikes = new HashMap<>();
+        String sqlQueryUsersId = "SELECT user_id FROM like_film GROUP BY user_id;";
+        List<Long> users = jdbcTemplate.query(sqlQueryUsersId, (rs, rowNum) -> rs.getLong("user_id"));
+
+        for (Long user : users) {
+            String sqlQueryFilmsId = "SELECT film_id FROM like_film WHERE user_id = ?;";
+            List<Long> likes = jdbcTemplate.query(sqlQueryFilmsId,
+                    (rs, rowNum) -> rs.getLong("film_id"), user);
+            usersLikes.put(user, new HashSet<>(likes));
+        }
+
+        return usersLikes;
     }
 
     private void checkUserExist(long id) {
