@@ -9,6 +9,9 @@ import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.feed.FeedEntity;
+import ru.yandex.practicum.filmorate.model.feed.FeedEventType;
+import ru.yandex.practicum.filmorate.model.feed.FeedOperation;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -44,11 +47,8 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User update(User user) {
         long id = user.getId();
-        if (this.notContainUser(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
-            );
-        }
+        checkUserExist(id);
+
         String sqlQuery = "UPDATE user_data SET name = ?, login = ?, email = ?, birthday = ? WHERE user_id = ?";
         jdbcTemplate.update(sqlQuery,
                 user.getName(),
@@ -61,15 +61,20 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User get(long id) {
+        checkUserExist(id);
+        String filmSqlQuery = "SELECT * FROM user_data WHERE user_id = ?";
+        return jdbcTemplate.queryForObject(filmSqlQuery, this::mapRowToUser, id);
+    }
+
+    public void delete(long id) {
         if (this.notContainUser(id)) {
             throw new EntityNotFoundException(
                     new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
             );
         }
-        String filmSqlQuery = "SELECT * FROM user_data WHERE user_id = ?";
-        return jdbcTemplate.queryForObject(filmSqlQuery, this::mapRowToUser, id);
+        String sqlQuery = "DELETE FROM user_data WHERE user_id = " + id;
+        jdbcTemplate.execute(sqlQuery);
     }
-
 
     @Override
     public List<User> getAll() {
@@ -79,16 +84,9 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User addFriend(long id, long followerId) {
-        if (this.notContainUser(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
-            );
-        }
-        if (this.notContainUser(followerId)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", followerId))
-            );
-        }
+        checkUserExist(id);
+        checkUserExist(followerId);
+
         if (containsFriendApproval(followerId, id, false)) {
             String sqlQuery = "UPDATE follow SET approved = ? WHERE target_id = ? AND follower_id = ?";
             jdbcTemplate.update(sqlQuery, true, followerId, id);
@@ -102,16 +100,9 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User removeFriend(long id, long followerId) {
-        if (this.notContainUser(followerId)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", followerId))
-            );
-        }
-        if (this.notContainUser(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
-            );
-        }
+        checkUserExist(followerId);
+        checkUserExist(id);
+
         if (containsFriendApproval(followerId, id, true)) {
             String sqlQuery = "DELETE FROM follow WHERE target_id = ? AND follower_id = ?";
             jdbcTemplate.update(sqlQuery, followerId, id);
@@ -128,11 +119,8 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getFriends(long id) {
-        if (this.notContainUser(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
-            );
-        }
+        checkUserExist(id);
+
         String sqlQuery =
                 "SELECT * " +
                         "FROM user_data " +
@@ -151,16 +139,9 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getCommonFriends(long id, long otherId) {
-        if (this.notContainUser(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
-            );
-        }
-        if (this.notContainUser(otherId)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", otherId))
-            );
-        }
+        checkUserExist(id);
+        checkUserExist(otherId);
+
         String sqlQuery =
                 "SELECT u1.user_id, u1.email, u1.login, u1.birthday, u1.name " +
                         "FROM ( " +
@@ -201,6 +182,30 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
+    public List<FeedEntity> getFeed(long id) {
+        checkUserExist(id);
+        String sqlQuery =
+                "SELECT  " +
+                        "    f.event_id, " +
+                        "    f.user_id, " +
+                        "    f.entity_id, " +
+                        "    f.time, " +
+                        "    eo.name AS operation_name, " +
+                        "    et.name AS type_name " +
+                        "FROM  " +
+                        "    feed f " +
+                        "JOIN  " +
+                        "    event_operation eo ON f.operation_id = eo.operation_id " +
+                        "JOIN  " +
+                        "    event_type et ON f.type_id = et.type_id " +
+                        "WHERE  " +
+                        "    f.user_id = ? " +
+                        "ORDER BY " +
+                        "    f.time";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFeedEntity, id);
+    }
+
+    @Override
     public boolean notContainUser(long id) {
         String sqlQuery = "select count(*) from user_data where USER_ID = ?";
         Integer count = jdbcTemplate.queryForObject(sqlQuery, Integer.class, id);
@@ -238,6 +243,17 @@ public class UserDbStorage implements UserStorage {
                 .build();
     }
 
+    private FeedEntity mapRowToFeedEntity(ResultSet rs, int rowNum) throws SQLException {
+        return FeedEntity.builder()
+                .eventId(rs.getLong("event_id"))
+                .userId(rs.getLong("user_id"))
+                .entityId(rs.getLong("entity_id"))
+                .operation(FeedOperation.valueOf(rs.getString("operation_name")))
+                .eventType(FeedEventType.valueOf(rs.getString("type_name")))
+                .timestamp(rs.getDate("time").getTime())
+                .build();
+    }
+
     private boolean containsFriendApproval(long targetId, long friendId, boolean approved) {
         String sqlQuery = "SELECT COUNT(*) FROM follow WHERE target_id = ? AND follower_id = ? AND approved = ?";
         Integer count = jdbcTemplate.queryForObject(sqlQuery, Integer.class, targetId, friendId, approved);
@@ -257,5 +273,13 @@ public class UserDbStorage implements UserStorage {
         }
 
         return usersLikes;
+    }
+
+    private void checkUserExist(long id) {
+        if (this.notContainUser(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
+            );
+        }
     }
 }

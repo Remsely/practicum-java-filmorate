@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.feed.FeedEntity;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
@@ -39,6 +40,12 @@ public class UserController {
         return userService.getUser(id);
     }
 
+    @DeleteMapping(value = "/{userId}")
+    public void deleteUser(@PathVariable long userId) {
+        log.info("Получен DELETE-запрос к /users/{}.", userId);
+        userService.deleteUser(userId);
+    }
+
     @GetMapping
     public List<User> getUsers() {
         log.info("Получен GET-запрос к /users.");
@@ -47,7 +54,7 @@ public class UserController {
 
     @PutMapping("/{id}/friends/{followerId}")
     public User putFriend(@PathVariable long id, @PathVariable long followerId) {
-        log.info("Получен PUT-запрос к /users/{}/friends/{}. {} ", id, followerId, userService.getUser(id));
+        log.info("Получен PUT-запрос к /users/{}/friends/{}.", id, followerId);
         return userService.addFriend(id, followerId);
     }
 
@@ -67,6 +74,12 @@ public class UserController {
     public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
         log.info("Получен GET-запрос к /users/{}/friends/common/{}.", id, otherId);
         return userService.getCommonFriends(id, otherId);
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<FeedEntity> getUserFeed(@PathVariable long id) {
+        log.info("Получен GET-запрос к /users/{}/feed.", id);
+        return userService.getUserFeed(id);
     }
 
     @GetMapping("/{id}/recommendations")

@@ -12,6 +12,8 @@ public interface FilmStorage {
 
     Film get(long id);
 
+    void delete(long id);
+
     List<Film> getAll();
 
     Film addLike(long id, long userId);
@@ -23,6 +25,8 @@ public interface FilmStorage {
     List<Film> getPopular(int count);
 
     boolean notContainFilm(long id);
+
+    List<Film> getFilmWithName(String name);
 
     // DIRECTOR.Получить список фильмов режиссера отсортированных по количеству лайков или году выпуска
     List<Film> getDirectorSortedFilms(long id, String sortBy);
