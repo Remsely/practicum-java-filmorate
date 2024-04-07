@@ -97,4 +97,9 @@ public class InMemoryUserStorage implements UserStorage {
     public boolean notContainUser(long id) {
         return !data.containsKey(id);
     }
+
+    @Override
+    public Map<Long, Set<Long>> findUsersWithLikes() {
+        return null;
+    }
 }

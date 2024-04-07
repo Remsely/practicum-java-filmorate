@@ -4,19 +4,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Service
 public class UserService {
     private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage, @Qualifier("filmDbStorage") FilmStorage filmStorage) {
         this.userStorage = userStorage;
+        this.filmStorage = filmStorage;
     }
 
     public User addUser(User user) {
@@ -72,5 +76,37 @@ public class UserService {
         List<User> friends = userStorage.getCommonFriends(id, otherId);
         log.info("Получен список общих друзей пользователей с id {} и {}. List<User>: {}", id, otherId, friends);
         return friends;
+    }
+
+    public List<Film> getRecommendations(Long id) {
+        userStorage.get(id);
+        Map<Long, Set<Long>> usersLikes = userStorage.findUsersWithLikes();
+        Set<Long> userLikeFilms = usersLikes.get(id);
+        usersLikes.remove(id);
+        if (usersLikes.isEmpty() || userLikeFilms == null) {
+            return new ArrayList<>();
+        }
+
+        Long userIdWithMaxInters = -1L;
+        int maxInters = -1;
+        for (Long userId : usersLikes.keySet()) {
+            Set<Long> filmsId = new HashSet<>(usersLikes.get(userId));
+            filmsId.retainAll(userLikeFilms);
+            int countInters = filmsId.size();
+            if (maxInters < countInters) {
+                maxInters = countInters;
+                userIdWithMaxInters = userId;
+            }
+        }
+
+        Set<Long> filmsId = usersLikes.get(userIdWithMaxInters);
+        filmsId.removeAll(userLikeFilms);
+
+        List<Film> films = new ArrayList<>();
+        for (Long filmId : filmsId) {
+            films.add(filmStorage.get(filmId));
+        }
+
+        return films;
     }
 }

@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.storage.user;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface UserStorage {
     User add(User user);
@@ -24,4 +26,6 @@ public interface UserStorage {
     List<Long> getLikes(long id);
 
     boolean notContainUser(long id);
+
+    public Map<Long, Set<Long>> findUsersWithLikes();
 }
