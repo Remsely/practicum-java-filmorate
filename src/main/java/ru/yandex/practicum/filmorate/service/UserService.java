@@ -4,13 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.model.feed.FeedEntity;
 import ru.yandex.practicum.filmorate.model.feed.FeedEventType;
 import ru.yandex.practicum.filmorate.model.feed.FeedOperation;
 import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
@@ -118,7 +120,14 @@ public class UserService {
         return userStorage.getFeed(userId);
     }
 
-    public List<Film> getRecommendations(Long id) {
+    public List<Film> getRecommendations(long id) {
+
+        if (userStorage.notContainUser(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
+            );
+        }
+
         userStorage.get(id);
         Map<Long, Set<Long>> usersLikes = userStorage.findUsersWithLikes();
         Set<Long> userLikeFilms = usersLikes.get(id);
@@ -127,6 +136,7 @@ public class UserService {
             return new ArrayList<>();
         }
 
+        log.info("Поиск пользователя с наибольшим пересечением");
         Long userIdWithMaxInters = -1L;
         int maxInters = -1;
         for (Long userId : usersLikes.keySet()) {
@@ -139,6 +149,7 @@ public class UserService {
             }
         }
 
+        log.info("Фильмы пользователя с наибольшим пересечением");
         Set<Long> filmsId = usersLikes.get(userIdWithMaxInters);
         filmsId.removeAll(userLikeFilms);
 
@@ -146,7 +157,7 @@ public class UserService {
         for (Long filmId : filmsId) {
             films.add(filmStorage.get(filmId));
         }
-
+        log.info("Получен списк фильмов List<Film>: {} для пользователя с id {}", films, id);
         return films;
     }
 }
