@@ -117,7 +117,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film addLike(long id, long userId) {
         checkFilmExist(id);
-        String sqlQuery = "INSERT INTO like_film (film_id, user_id) VALUES (?, ?)";
+        String sqlQuery = "MERGE INTO like_film (film_id, user_id) VALUES (?, ?)";
         jdbcTemplate.update(sqlQuery, id, userId);
         return this.get(id);
     }

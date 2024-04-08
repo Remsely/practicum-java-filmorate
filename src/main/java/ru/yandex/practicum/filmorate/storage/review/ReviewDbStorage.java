@@ -70,7 +70,7 @@ public class ReviewDbStorage {
 
     public List<Review> getAllReviews(int count) {
         String sqlQuery = getBaseCommand() +
-                "ORDER BY useful DESC \n " +
+                "ORDER BY useful DESC " +
                 "LIMIT ? ";
         SqlRowSet rows = jdbcTemplate.queryForRowSet(sqlQuery, count);
 
@@ -83,8 +83,8 @@ public class ReviewDbStorage {
 
     public List<Review> getFilmReviews(long filmId, int count) {
         String sqlQuery = getBaseCommand() +
-                "WHERE film_id = ? \n " +
-                "ORDER BY useful DESC \n " +
+                "WHERE film_id = ? " +
+                "ORDER BY useful DESC " +
                 "LIMIT ? ";
         SqlRowSet rows = jdbcTemplate.queryForRowSet(sqlQuery, filmId, count);
 
