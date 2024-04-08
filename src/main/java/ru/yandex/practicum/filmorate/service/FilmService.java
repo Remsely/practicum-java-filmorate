@@ -111,24 +111,24 @@ public class FilmService {
         return film;
     }
 
-    public List<Film> getPopular(int count, long id, Integer year) {
-        if (year != 0 && id != 0) {
+    public List<Film> getPopular(int count, Long id, Integer year) {
+        if (year != null && id != null) {
             List<Film> films = filmStorage.getPopularFilmSortedByGenreAndYear(count, id, year);
-            log.info("Получен список {} самых популярных фильмов." +
-                    " List<Film>: {} с genre_id = {} и release = {}", count, films, id, year);
+            log.info("Получен список {} самых популярных фильмов с genre_id = {} и release = {}" +
+                    " List<Film>: {} ", count, id, year, films);
             return films;
         }
-        if (year != 0 && id == 0) {
+        if (year != null && id == null) {
             List<Film> films = filmStorage.getPopularFilmSortedByYear(count, year);
-            log.info("Получен список {} самых популярных фильмов. " +
-                    "List<Film>: {} с release = {}", count, films, year);
+            log.info("Получен список {} самых популярных фильмов с release = {} " +
+                    "List<Film>: {}", count, year, films);
             return films;
         }
 
-        if (year == 0 && id != 0) {
+        if (year == null && id != null) {
             List<Film> films = filmStorage.getPopularFilmSortedByGenre(count, id);
-            log.info("Получен список {} самых популярных фильмов. " +
-                    "List<Film>: {} с genre_id = {}", count, films, id);
+            log.info("Получен список {} самых популярных фильмов с genre_id = {} " +
+                    "List<Film>: {}", count, id, films);
             return films;
         }
 
