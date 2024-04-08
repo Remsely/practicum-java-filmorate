@@ -24,6 +24,12 @@ public interface FilmStorage {
 
     List<Film> getPopular(int count);
 
+    List<Film> getPopularFilmSortedByYear(int count, Integer year);
+
+    List<Film> getPopularFilmSortedByGenre(int count, long genreId);
+
+    List<Film> getPopularFilmSortedByGenreAndYear(int count, long genreId, Integer year);
+
     boolean notContainFilm(long id);
 
     List<Film> getFilmWithName(String name);

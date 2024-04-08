@@ -4,15 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.model.enumarate.ChoosingSearch;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enumarate.ChoosingSearch;
 import ru.yandex.practicum.filmorate.model.feed.FeedEventType;
 import ru.yandex.practicum.filmorate.model.feed.FeedOperation;
-import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -111,10 +111,31 @@ public class FilmService {
         return film;
     }
 
-    public List<Film> getPopular(int count) {
+    public List<Film> getPopular(int count, Long id, Integer year) {
+        if (year != null && id != null) {
+            List<Film> films = filmStorage.getPopularFilmSortedByGenreAndYear(count, id, year);
+            log.info("Получен список {} самых популярных фильмов с genre_id = {} и release = {}" +
+                    " List<Film>: {} ", count, id, year, films);
+            return films;
+        }
+        if (year != null && id == null) {
+            List<Film> films = filmStorage.getPopularFilmSortedByYear(count, year);
+            log.info("Получен список {} самых популярных фильмов с release = {} " +
+                    "List<Film>: {}", count, year, films);
+            return films;
+        }
+
+        if (year == null && id != null) {
+            List<Film> films = filmStorage.getPopularFilmSortedByGenre(count, id);
+            log.info("Получен список {} самых популярных фильмов с genre_id = {} " +
+                    "List<Film>: {}", count, id, films);
+            return films;
+        }
+
         List<Film> films = filmStorage.getPopular(count);
         log.info("Получен список {} самых популярных фильмов. List<Film>: {}", count, films);
         return films;
+
     }
 
     public List<Film> getCommonFilm(long userId, long friendId) {
