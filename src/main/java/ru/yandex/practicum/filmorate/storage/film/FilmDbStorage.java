@@ -84,9 +84,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDuration(),
                 id);
         genreStorage.updateFilmGenres(id, film.getGenres());
-        // Доработать логику обновления (текущий подход может сопровождаться потерей данных или ошибками)
-        directorStorage.deleteFilmDirectors(id);
-        directorStorage.addDirectors(id, film.getDirectors());
+        directorStorage.updateFilmDirectors(id, film.getDirectors());
         return this.get(film.getId());
     }
 
@@ -188,7 +186,6 @@ public class FilmDbStorage implements FilmStorage {
         return (new HashSet<>(jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getLong("user_id"), id)));
     }
 
-    //получение фильма по имени
     @Override
     public List<Film> getFilmWithName(String name) {
         String nameStr = "%" + name.toLowerCase() + "%";
@@ -196,7 +193,6 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, nameStr);
     }
 
-    // DIRECTOR.Получить список фильмов режиссера отсортированных по количеству лайков или году выпуска
     @Override
     public List<Film> getDirectorSortedFilms(long directorId, String sortBy) {
         if (directorStorage.notContainDirector(directorId)) {

@@ -5,25 +5,27 @@ import ru.yandex.practicum.filmorate.model.Director;
 import java.util.List;
 
 public interface DirectorStorage {
-    Director get(long id); // Получить режиссера
+    Director get(long id);
 
-    Director add(Director director); // Добавить режиссера
+    Director add(Director director);
 
-    Director update(Director director); // Обновить режиссера
+    Director update(Director director);
 
-    void delete(long id); // Удалить режиссера
+    void delete(long id);
 
     List<Director> getDirectorsWithName(String name);
 
-    void deleteFilmDirectors(long id); // Удалить связь фильма с режиссером
+    void deleteFilmDirectors(long id);
 
-    List<Director> getAll(); // Получить список всех режиссеров
+    List<Director> getAll();
 
-    boolean notContainDirector(long id); // Проверить есть ли режиссер в БД
+    boolean notContainDirector(long id);
 
-    List<Director> addDirectors(long id, List<Director> directors); // Добавить режиссера к фильму
+    List<Director> addDirectors(long id, List<Director> directors);
 
-    List<Director> getFilmDirectors(long id); // Получить режиссера у фильма
+    List<Director> getFilmDirectors(long id);
 
-    boolean filmNotContainDirector(long filmId, long directorId); // Проверить содержится ли режиссер у фильма
+    void updateFilmDirectors(long id, List<Director> directors);
+
+    boolean filmNotContainDirector(long filmId, long directorId);
 }

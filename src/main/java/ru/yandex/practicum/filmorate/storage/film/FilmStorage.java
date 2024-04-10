@@ -34,6 +34,5 @@ public interface FilmStorage {
 
     List<Film> getFilmWithName(String name);
 
-    // DIRECTOR.Получить список фильмов режиссера отсортированных по количеству лайков или году выпуска
     List<Film> getDirectorSortedFilms(long id, String sortBy);
 }
