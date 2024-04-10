@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MPAStorage;
 
+import javax.transaction.Transactional;
 import java.sql.*;
 import java.util.HashSet;
 import java.util.List;
@@ -63,6 +64,7 @@ public class FilmDbStorage implements FilmStorage {
         return this.get(id);
     }
 
+    @Transactional
     @Override
     public Film update(Film film) {
         long id = film.getId();
@@ -226,7 +228,6 @@ public class FilmDbStorage implements FilmStorage {
         Integer count = jdbcTemplate.queryForObject(sqlQuery, Integer.class, id);
         return count != null && count == 0;
     }
-
 
     private Film mapRowToSortedFilms(ResultSet rs, int rowNum) throws SQLException {
         long id = rs.getLong("film_id");

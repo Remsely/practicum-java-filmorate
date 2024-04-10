@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exception.FilmAttributeNotExistOnFilmCreati
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Genre;
 
+import javax.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -57,6 +58,7 @@ public class GenreDbStorage implements GenreStorage {
         return genres;
     }
 
+    @Transactional
     @Override
     public List<Genre> updateFilmGenres(long id, List<Genre> genres) {
         if (genres == null) {

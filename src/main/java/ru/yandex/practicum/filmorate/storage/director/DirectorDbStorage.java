@@ -55,13 +55,6 @@ public class DirectorDbStorage implements DirectorStorage {
     }
 
     @Override
-    public void delete(long id) {
-        checkDirectorExist(id);
-        String sqlQuery = "DELETE FROM director WHERE director_id = ?";
-        jdbcTemplate.update(sqlQuery, id);
-    }
-
-    @Override
     public List<Director> getAll() {
         String sqlQuery = "SELECT * FROM director";
         return jdbcTemplate.query(sqlQuery, this::mapRowDirector);
@@ -86,6 +79,13 @@ public class DirectorDbStorage implements DirectorStorage {
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> this.get(rs.getLong("director_id")), id);
     }
 
+    @Override
+    public List<Director> getDirectorsWithName(String name) {
+        String nameStr = "%" + name.toLowerCase() + "%";
+        String sqlQuery = "SELECT * FROM director WHERE LOWER(name) LIKE ?";
+        return jdbcTemplate.query(sqlQuery, this::mapRowDirector, nameStr);
+    }
+
     @Transactional
     @Override
     public void updateFilmDirectors(long filmId, List<Director> directors) {
@@ -94,10 +94,10 @@ public class DirectorDbStorage implements DirectorStorage {
     }
 
     @Override
-    public List<Director> getDirectorsWithName(String name) {
-        String nameStr = "%" + name.toLowerCase() + "%";
-        String sqlQuery = "SELECT * FROM director WHERE LOWER(name) LIKE ?";
-        return jdbcTemplate.query(sqlQuery, this::mapRowDirector, nameStr);
+    public void delete(long id) {
+        checkDirectorExist(id);
+        String sqlQuery = "DELETE FROM director WHERE director_id = ?";
+        jdbcTemplate.update(sqlQuery, id);
     }
 
     @Override
