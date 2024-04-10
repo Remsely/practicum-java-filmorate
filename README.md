@@ -21,7 +21,7 @@ Restful API back-end сервис для управления фильмами �
 ## Стэк проекта
 - Java 11, Spring Boot, Maven, Lombok, Junit, JDBC, JdbcTest, SQL, H2, Postman
 - Зависимости: [pom.xml](pom.xml)
-- Тесты: [tests](docs/test_postman)
+- Тесты: [tests](.postman)
 
 ## Функционал
 ### EndPoints:
@@ -102,12 +102,11 @@ Restful API back-end сервис для управления фильмами �
 
 
 ## SQL-запросы
-
-### Фильмы
+#### Примеры:
+#### Фильмы
 <details>
 <summary>Таблица film</summary>
 
-Примеры:
 - Получить все фильмы
 ```sql
 SELECT * 
@@ -187,11 +186,10 @@ FROM film WHERE film_id = ?;
 </details>
 
 
-### Возрастной рейтинг
+#### Возрастной рейтинг
 <details>
 <summary>Таблица mpa_rating</summary>
 
-Примеры:
 - Получить все рейтинги фильмов
 ```sql
 SELECT * 
@@ -212,11 +210,10 @@ WHERE rating_id = ?;
 </details>
 
 
-### Жанры
+#### Жанры
 <details>
 <summary>Таблица genre</summary>
 
-Примеры:
 - Получить все жанры
 ```sql
 SELECT * 
@@ -242,11 +239,10 @@ WHERE genre_id = ?;
 </details>
 
 
-### Жанры фильма
+#### Жанры фильма
 <details>
 <summary>Таблица film_genre</summary>
 
-Примеры:
 - Получить жанр фильма
 ```sql
 SELECT genre_id 
@@ -276,11 +272,10 @@ WHERE film_id = ?;
 </details>
 
 
-### Пользователи
+#### Пользователи
 <details>
 <summary>Таблица user_data</summary>
 
-Примеры:
 - Добавить пользователя
 ```sql
 INSERT INTO user_data (name, login, email, birthday) 
@@ -314,7 +309,7 @@ WHERE user_id = ?;
 ```
 </details>
 
-### Лайки фильмов
+#### Лайки фильмов
 <details>
 <summary>Таблица like_film</summary>
 
@@ -336,11 +331,10 @@ WHERE film_id = ? AND user_id = ?;
 ```
 </details>
 
-### Друзья
+#### Друзья
 <details>
 <summary>Таблица follow</summary>
 
-Примеры:
 - Добавить в друзья
   В друзьях
 ```sql
@@ -426,11 +420,10 @@ WHERE target_id = ? AND follower_id = ? AND approved = ?;
 ```
 </details>
 
-### Режиссер
+#### Режиссер
 <details>
 <summary>Таблица director</summary>
 
-Примеры:
 - Получить всех режиссеров
 ```sql
 SELECT * 
@@ -465,11 +458,10 @@ WHERE director_id = ?;
 ```
 </details>
 
-### Фильмы режиссера
+#### Фильмы режиссера
 <details>
 <summary>Таблица film_director</summary>
 
-Примеры:
 - Получить всех режиссеров фильма
 ```sql
 SELECT * 
@@ -494,11 +486,10 @@ WHERE director_id = ? AND film_id = ?;
 ```
 </details>
 
-### Отзывы
+#### Отзывы
 <details>
 <summary>Таблица review</summary>
 
-Примеры:
 - Добавить отзыв
 ```sql
 INSERT INTO review (content, user_id, film_id, is_positive) 
@@ -553,11 +544,10 @@ WHERE review_id = ?;
 ```
 </details>
 
-### Лайки отзывов
+#### Лайки отзывов
 <details>
 <summary>Таблица like_review</summary>
 
-Примеры:
 - Добавить лайк отзыву
 ```sql
 MERGE INTO like_review (user_id, review_id, usefull) 
@@ -579,7 +569,7 @@ DELETE FROM like_review WHERE user_id = ? AND review_id = ?
 ```
 </details>
 
-### История событий
+#### История событий
 <details>
 <summary>Таблица user_event</summary>
 
@@ -599,11 +589,10 @@ ORDER BY f.time;
 ```
 </details>
 
-### Поиск
+#### Поиск
 <details>
 <summary>Таблица user_event</summary>
 
-Примеры:
 - По популярности
 ```sql
 SELECT * 
@@ -636,11 +625,10 @@ ORDER BY COUNT(like_film.film_id) DESC;
 ```
 </details>
 
-### Популярность фильмов
+#### Популярность фильмов
 <details>
 <summary>Таблица user_event</summary>
 
-Примеры:
 - По жанру и году
 ```sql
 SELECT f.* 
@@ -674,7 +662,6 @@ ORDER BY COUNT(lf.user_id) DESC
 LIMIT ?;
 ```
 </details>
-
 
 ## Ограничения полей (валидация данных)
 
