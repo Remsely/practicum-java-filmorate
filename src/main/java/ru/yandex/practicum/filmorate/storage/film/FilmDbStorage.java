@@ -13,9 +13,11 @@ import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MPAStorage;
 
-import java.sql.Date;
 import java.sql.*;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Component
@@ -64,11 +66,8 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film update(Film film) {
         long id = film.getId();
-        if (this.notContainFilm(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
-            );
-        }
+        checkFilmExist(id);
+
         String sqlQuery =
                 "UPDATE film " +
                         "SET name = ?, " +
@@ -93,13 +92,20 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film get(long id) {
+        checkFilmExist(id);
+        String filmSqlQuery = "SELECT * FROM film WHERE film_id = ?";
+        return jdbcTemplate.queryForObject(filmSqlQuery, this::mapRowToFilm, id);
+    }
+
+    @Override
+    public void delete(long id) {
         if (this.notContainFilm(id)) {
             throw new EntityNotFoundException(
                     new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
             );
         }
-        String filmSqlQuery = "SELECT * FROM film WHERE film_id = ?";
-        return jdbcTemplate.queryForObject(filmSqlQuery, this::mapRowToFilm, id);
+        String sqlQuery = "DELETE FROM film WHERE film_id = " + id;
+        jdbcTemplate.execute(sqlQuery);
     }
 
     @Override
@@ -110,23 +116,15 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film addLike(long id, long userId) {
-        if (this.notContainFilm(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
-            );
-        }
-        String sqlQuery = "INSERT INTO like_film (film_id, user_id) VALUES (?, ?)";
+        checkFilmExist(id);
+        String sqlQuery = "MERGE INTO like_film (film_id, user_id) VALUES (?, ?)";
         jdbcTemplate.update(sqlQuery, id, userId);
         return this.get(id);
     }
 
     @Override
     public Film removeLike(long id, long userId) {
-        if (this.notContainFilm(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
-            );
-        }
+        checkFilmExist(id);
         String sqlQuery = "DELETE FROM like_film WHERE film_id = ? AND user_id = ?";
         jdbcTemplate.update(sqlQuery, id, userId);
         return this.get(id);
@@ -148,14 +146,54 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getPopularFilmSortedByGenreAndYear(int count, long genreId, Integer year) {
+        String sqlQuery = "SELECT f.* FROM film f " +
+                "LEFT JOIN like_film lf on f.film_id = lf.film_id " +
+                "LEFT JOIN film_genre fg ON f.film_id = fg.film_id " +
+                "WHERE fg.genre_id = ? AND year(f.release) = ? " +
+                "GROUP BY  f.film_id, fg.genre_id " +
+                "ORDER BY COUNT(lf.user_id) DESC " +
+                "LIMIT ?";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, year, count);
+    }
+
+    @Override
+    public List<Film> getPopularFilmSortedByYear(int count, Integer year) {
+        String sqlQuery = "SELECT f.* FROM film f " +
+                "LEFT JOIN like_film lf on f.film_id = lf.film_id " +
+                "WHERE year(f.release) = ? " +
+                "GROUP BY  f.film_id " +
+                "ORDER BY COUNT(lf.user_id) DESC " +
+                "LIMIT ?";
+
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, year, count);
+    }
+
+    @Override
+    public List<Film> getPopularFilmSortedByGenre(int count, long genreId) {
+        String sqlQuery = "SELECT f.* FROM film f " +
+                "LEFT JOIN like_film lf on f.film_id = lf.film_id " +
+                "LEFT JOIN film_genre fg ON f.film_id = fg.film_id " +
+                "WHERE fg.genre_id = ? " +
+                "GROUP BY  f.film_id, fg.genre_id " +
+                "ORDER BY COUNT(lf.user_id) DESC " +
+                "LIMIT ?";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, count);
+    }
+
+    @Override
     public Set<Long> getLikes(long id) {
-        if (this.notContainFilm(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
-            );
-        }
+        checkFilmExist(id);
         String sqlQuery = "SELECT user_id FROM like_film WHERE film_id = ?";
         return (new HashSet<>(jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getLong("user_id"), id)));
+    }
+
+    //получение фильма по имени
+    @Override
+    public List<Film> getFilmWithName(String name) {
+        String nameStr = "%" + name.toLowerCase() + "%";
+        String sqlQuery = "SELECT * FROM film WHERE LOWER(name) LIKE ?";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, nameStr);
     }
 
     // DIRECTOR.Получить список фильмов режиссера отсортированных по количеству лайков или году выпуска
@@ -167,7 +205,7 @@ public class FilmDbStorage implements FilmStorage {
             );
         }
 
-        String sqlQuery = "";
+        String sqlQuery;
         if ("year".equals(sortBy)) {
             sqlQuery = "SELECT film.film_id " +
                     "FROM film " +
@@ -212,5 +250,13 @@ public class FilmDbStorage implements FilmStorage {
                 .mpa(mpaStorage.get(rs.getLong("rating_id")))
                 .likes(this.getLikes(id))
                 .build();
+    }
+
+    private void checkFilmExist(long id) {
+        if (this.notContainFilm(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
+            );
+        }
     }
 }

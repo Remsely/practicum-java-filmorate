@@ -48,6 +48,21 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public void delete(long id) {
+        if (this.notContainFilm(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
+            );
+        }
+        data.remove(id);
+    }
+
+    @Override
+    public List<Film> getAll() {
+        return new ArrayList<>(data.values());
+    }
+
+    @Override
     public Film addLike(long id, long userId) {
         Film film = this.get(id);
         film.getLikes().add(userId);
@@ -70,6 +85,21 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getPopularFilmSortedByYear(int count, Integer year) {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<Film> getPopularFilmSortedByGenre(int count, long genreId) {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<Film> getPopularFilmSortedByGenreAndYear(int count, long genreId, Integer year) {
+        return new ArrayList<>();
+    }
+
+    @Override
     public Set<Long> getLikes(long id) {
         if (this.notContainFilm(id)) {
             throw new EntityNotFoundException(
@@ -80,13 +110,13 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getAll() {
-        return new ArrayList<>(data.values());
+    public boolean notContainFilm(long id) {
+        return !data.containsKey(id);
     }
 
     @Override
-    public boolean notContainFilm(long id) {
-        return !data.containsKey(id);
+    public List<Film> getFilmWithName(String name) {
+        return null;
     }
 
     // Добавлен так как есть в интерфейсе "FilmStorage"
@@ -94,4 +124,5 @@ public class InMemoryFilmStorage implements FilmStorage {
     public List<Film> getDirectorSortedFilms(long id, String sortBy) {
         return new ArrayList<>();
     }
+
 }

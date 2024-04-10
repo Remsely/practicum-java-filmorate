@@ -13,6 +13,7 @@ public class Review {
     @JsonProperty("reviewId")
     private Long id;
 
+    @NotNull
     @NotBlank(message = "Описание не может быть пустым")
     private String content;
 

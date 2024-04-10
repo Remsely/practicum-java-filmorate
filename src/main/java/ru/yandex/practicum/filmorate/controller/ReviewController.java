@@ -76,5 +76,4 @@ public class ReviewController {
         log.info("Получен DELETE-запрос: /reviews/{}/dislike/{}", id, userId);
         reviewService.removeDislike(id, userId);
     }
-
 }

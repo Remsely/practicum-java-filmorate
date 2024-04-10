@@ -41,3 +41,27 @@ WHERE NOT EXISTS (SELECT 1 FROM genre WHERE name = 'Документальный
 INSERT INTO genre (name)
 SELECT 'Боевик'
 WHERE NOT EXISTS (SELECT 1 FROM genre WHERE name = 'Боевик');
+
+INSERT INTO event_operation (name)
+SELECT 'ADD'
+WHERE NOT EXISTS (SELECT 1 FROM event_operation WHERE name = 'ADD');
+
+INSERT INTO event_operation (name)
+SELECT 'UPDATE'
+WHERE NOT EXISTS (SELECT 1 FROM event_operation WHERE name = 'UPDATE');
+
+INSERT INTO event_operation (name)
+SELECT 'REMOVE'
+WHERE NOT EXISTS (SELECT 1 FROM event_operation WHERE name = 'REMOVE');
+
+INSERT INTO event_type (name)
+SELECT 'LIKE'
+WHERE NOT EXISTS (SELECT 1 FROM event_type WHERE name = 'LIKE');
+
+INSERT INTO event_type (name)
+SELECT 'REVIEW'
+WHERE NOT EXISTS (SELECT 1 FROM event_type WHERE name = 'REVIEW');
+
+INSERT INTO event_type (name)
+SELECT 'FRIEND'
+WHERE NOT EXISTS (SELECT 1 FROM event_type WHERE name = 'FRIEND');
