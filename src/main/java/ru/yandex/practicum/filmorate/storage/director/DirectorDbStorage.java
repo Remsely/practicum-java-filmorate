@@ -10,6 +10,10 @@ import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.FilmAttributeNotExistOnFilmCreationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MPAStorage;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -67,7 +71,6 @@ public class DirectorDbStorage implements DirectorStorage {
         return jdbcTemplate.query(sqlQuery, this::mapRowDirector);
     }
 
-    // Добавить режиссеров к фильму
     @Override
     public List<Director> addDirectors(long id, List<Director> directors) {
         if (directors != null && !directors.isEmpty()) {
@@ -85,22 +88,12 @@ public class DirectorDbStorage implements DirectorStorage {
         return directors;
     }
 
-    // Получить режиссеров фильма
     @Override
     public List<Director> getFilmDirectors(long id) {
         String sqlQuery = "SELECT * FROM film_director WHERE film_id = ?";
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> this.get(rs.getLong("director_id")), id);
     }
 
-    //поиск режисера по имени
-    @Override
-    public List<Director> getDirectorsWithName(String name) {
-        String nameStr = "%" + name.toLowerCase() + "%";
-        String sqlQuery = "SELECT * FROM director WHERE LOWER(name) LIKE ?";
-        return jdbcTemplate.query(sqlQuery, this::mapRowDirector, nameStr);
-    }
-
-    // Удалить все связи режиссеров с фильмом
     @Override
     public void deleteFilmDirectors(long filmId) {
         String sqlQuery = "DELETE FROM film_director WHERE film_id = ?";

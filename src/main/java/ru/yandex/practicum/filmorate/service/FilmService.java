@@ -148,7 +148,6 @@ public class FilmService {
 
     }
 
-    // DIRECTOR.Получить список фильмов режиссера отсортированных по количеству лайков или году выпуска.
     public List<Film> getDirectorFilmsList(long id, String sortBy) {
         List<Film> films = filmStorage.getDirectorSortedFilms(id, sortBy);
         log.info("Получен список фильмов режисера Director Id: {}, " +
@@ -156,7 +155,6 @@ public class FilmService {
         return films;
     }
 
-    //Поиск
     public List<Film> search(String query, List<String> by) {
         int len = by.size();
         if (len == 1 && by.get(0).equals(String.valueOf(ChoosingSearch.title))) {
@@ -164,21 +162,13 @@ public class FilmService {
             logQueryInfo(query, by, films);
             return films;
         } else if (len == 1 && by.get(0).equals(String.valueOf(ChoosingSearch.director))) {
-            List<Director> director = directorStorage.getDirectorsWithName(query);
-            List<Film> films = new ArrayList<>();
-            for (Director dir : director) {
-                films.addAll(filmStorage.getDirectorSortedFilms(dir.getId(), "likes"));
-            }
+            List<Film> films = filmStorage.getFilmWithDirectorName(query);
             logQueryInfo(query, by, films);
             return films;
         } else {
             List<Film> films = new ArrayList<>();
-
-            directorStorage.getDirectorsWithName(query).forEach(
-                    director -> films.addAll(filmStorage.getDirectorSortedFilms(director.getId(), "likes"))
-            );
             films.addAll(filmStorage.getFilmWithName(query));
-
+            films.addAll(filmStorage.getFilmWithDirectorName(query));
             logQueryInfo(query, by, films);
             return films;
         }

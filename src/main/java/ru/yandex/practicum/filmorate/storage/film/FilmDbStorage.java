@@ -115,6 +115,17 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getFilmWithDirectorName(String name) {
+        String nameStr = "%" + name.toLowerCase() + "%";
+        String sqlQuery = "SELECT f.*\n" +
+                "FROM FILM f  \n" +
+                "JOIN FILM_DIRECTOR fd ON f.FILM_ID  = fd.FILM_ID \n" +
+                "JOIN DIRECTOR d ON d.DIRECTOR_ID  = fd.DIRECTOR_ID \n" +
+                "WHERE LOWER(d.NAME) LIKE ?";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, nameStr);
+    }
+
+    @Override
     public Film addLike(long id, long userId) {
         checkFilmExist(id);
         String sqlQuery = "MERGE INTO like_film (film_id, user_id) VALUES (?, ?)";
@@ -188,7 +199,6 @@ public class FilmDbStorage implements FilmStorage {
         return (new HashSet<>(jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getLong("user_id"), id)));
     }
 
-    //получение фильма по имени
     @Override
     public List<Film> getFilmWithName(String name) {
         String nameStr = "%" + name.toLowerCase() + "%";
@@ -196,7 +206,6 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, nameStr);
     }
 
-    // DIRECTOR.Получить список фильмов режиссера отсортированных по количеству лайков или году выпуска
     @Override
     public List<Film> getDirectorSortedFilms(long directorId, String sortBy) {
         if (directorStorage.notContainDirector(directorId)) {

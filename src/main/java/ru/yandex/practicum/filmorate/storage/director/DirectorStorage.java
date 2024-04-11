@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.director;
 
 import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
 
@@ -12,8 +13,6 @@ public interface DirectorStorage {
     Director update(Director director); // Обновить режиссера
 
     void delete(long id); // Удалить режиссера
-
-    List<Director> getDirectorsWithName(String name);
 
     void deleteFilmDirectors(long id); // Удалить связь фильма с режиссером
 
