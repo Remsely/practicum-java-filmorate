@@ -165,9 +165,8 @@ public class FilmService {
             logQueryInfo(query, by, films);
             return films;
         } else {
-            List<Film> films = new ArrayList<>();
+            List<Film> films = filmStorage.getFilmWithDirectorName(query);
             films.addAll(filmStorage.getFilmWithName(query));
-            films.addAll(filmStorage.getFilmWithDirectorName(query));
             logQueryInfo(query, by, films);
             return films;
         }
