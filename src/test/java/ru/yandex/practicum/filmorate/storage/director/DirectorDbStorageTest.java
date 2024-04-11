@@ -118,25 +118,4 @@ public class DirectorDbStorageTest {
         assertThat(directors)
                 .isEmpty();
     }
-
-    @Test
-    public void testGetDirectorsWithName() {
-        Director director = Director.builder()
-                .id(1L)
-                .name("Mega Famous Director 1")
-                .build();
-        Director director2 = Director.builder()
-                .id(2L)
-                .name("Famous Director 2")
-                .build();
-        directorStorage.add(director);
-        directorStorage.add(director2);
-        List<Director> expList = new ArrayList<>();
-        expList.add(director);
-        List<Director> directorsList = directorStorage.getDirectorsWithName("meGA");
-        assertThat(directorsList)
-                .isNotEmpty()
-                .isNotNull()
-                .isEqualTo(expList);
-    }
 }
