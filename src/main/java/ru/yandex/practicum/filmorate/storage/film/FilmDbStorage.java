@@ -181,8 +181,8 @@ public class FilmDbStorage implements FilmStorage {
         String sqlQuery = "SELECT f.film_id " +
                 "FROM film f " +
                 "JOIN film_director fd ON f.film_id = fd.film_id " +
-                (sortBy != null && "year".equals(sortBy) ? "WHERE fd.director_id = ? " +
-                "ORDER BY f.release" :
+                    (sortBy != null && "year".equals(sortBy) ? "WHERE fd.director_id = ? " +
+                            "ORDER BY f.release" :
                 "LEFT JOIN like_film lf ON f.film_id = lf.film_id " +
                 "WHERE fd.director_id = ? " +
                 "GROUP BY f.film_id " +
