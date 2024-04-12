@@ -4,7 +4,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.feed.FeedEntity;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public interface UserStorage {
@@ -32,5 +31,5 @@ public interface UserStorage {
 
     boolean notContainUser(long id);
 
-    public Map<Long, Set<Long>> findUsersWithLikes();
+    Set<Long> findFilmsWithLikes(Long id);
 }

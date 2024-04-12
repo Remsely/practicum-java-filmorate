@@ -63,13 +63,14 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopular(@RequestParam(defaultValue = "10") int count,
-                                 @RequestParam(required = false) Long genreId,
-                                 @RequestParam(required = false) Integer year) {
+    public List<Film> getPopularFilm(@RequestParam(defaultValue = "10") int count,
+                                     @RequestParam(required = false) Long genreId,
+                                     @RequestParam(required = false) Integer year) {
 
         log.info("Получен GET-запрос к /popular/count={}/genreId={}/year={}.", count, genreId, year);
-        return filmService.getPopular(count, genreId, year);
+        return filmService.getPopularFilm(count, genreId, year);
     }
+    //List<Customer> findCustomerByNameAndEmail(@Param("name") String name, @Param("email") String email)
 
     @GetMapping("/common")
     public List<Film> getCommonFilms(@RequestParam(value = "userId") long userId,

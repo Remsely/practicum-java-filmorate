@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -131,54 +132,17 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopular(int count) {
-        String sqlQuery =
-                "SELECT f.* " +
-                        "FROM film AS f " +
-                        "LEFT JOIN ( " +
-                        "    SELECT film_id, COUNT(*) AS like_count " +
-                        "    FROM like_film " +
-                        "    GROUP BY film_id " +
-                        ") l ON f.film_id = l.film_id " +
-                        "ORDER BY l.like_count DESC " +
-                        "LIMIT ?";
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, count);
-    }
-
-    @Override
-    public List<Film> getPopularFilmSortedByGenreAndYear(int count, long genreId, Integer year) {
+    @Query
+    public List<Film> getPopularFilm(int count, Long genreId, Integer year) {
         String sqlQuery = "SELECT f.* FROM film f " +
                 "LEFT JOIN like_film lf on f.film_id = lf.film_id " +
                 "LEFT JOIN film_genre fg ON f.film_id = fg.film_id " +
-                "WHERE fg.genre_id = ? AND year(f.release) = ? " +
-                "GROUP BY  f.film_id, fg.genre_id " +
+                "WHERE (:genreId is null or fg.genre_id = :genreId) " +
+                "AND (:year is null or year(f.release) = :year)" +
+                "GROUP BY f.film_id, fg.genre_id " +
                 "ORDER BY COUNT(lf.user_id) DESC " +
                 "LIMIT ?";
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, year, count);
-    }
-
-    @Override
-    public List<Film> getPopularFilmSortedByYear(int count, Integer year) {
-        String sqlQuery = "SELECT f.* FROM film f " +
-                "LEFT JOIN like_film lf on f.film_id = lf.film_id " +
-                "WHERE year(f.release) = ? " +
-                "GROUP BY  f.film_id " +
-                "ORDER BY COUNT(lf.user_id) DESC " +
-                "LIMIT ?";
-
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, year, count);
-    }
-
-    @Override
-    public List<Film> getPopularFilmSortedByGenre(int count, long genreId) {
-        String sqlQuery = "SELECT f.* FROM film f " +
-                "LEFT JOIN like_film lf on f.film_id = lf.film_id " +
-                "LEFT JOIN film_genre fg ON f.film_id = fg.film_id " +
-                "WHERE fg.genre_id = ? " +
-                "GROUP BY  f.film_id, fg.genre_id " +
-                "ORDER BY COUNT(lf.user_id) DESC " +
-                "LIMIT ?";
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, count);
     }
 
     @Override

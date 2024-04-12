@@ -116,7 +116,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public Map<Long, Set<Long>> findUsersWithLikes() {
-        return null;
+    public Set<Long> findFilmsWithLikes(Long id) {
+        return new HashSet<Long>();
     }
 }

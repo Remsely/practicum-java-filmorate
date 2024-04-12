@@ -22,13 +22,7 @@ public interface FilmStorage {
 
     Set<Long> getLikes(long id);
 
-    List<Film> getPopular(int count);
-
-    List<Film> getPopularFilmSortedByYear(int count, Integer year);
-
-    List<Film> getPopularFilmSortedByGenre(int count, long genreId);
-
-    List<Film> getPopularFilmSortedByGenreAndYear(int count, long genreId, Integer year);
+    List<Film> getPopularFilm(int count, Long genreId, Integer year);
 
     boolean notContainFilm(long id);
 
