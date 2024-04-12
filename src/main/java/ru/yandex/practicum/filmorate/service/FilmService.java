@@ -144,10 +144,6 @@ public class FilmService {
         }
     }
 
-    private void logQueryInfo(String query, List<String> by, List<Film> films) {
-        log.info("Получен список фильмов по запросу '{}'. Поиск по {}: list: {}", query, by, films);
-    }
-
     public List<Film> getPopularFilm(int count, Long id, Integer year) {
         List<Film> films = filmStorage.getPopularFilm(count, id, year);
         log.info("Получен список {} самых популярных фильмов с genre_id = {} и release = {}" +
@@ -156,5 +152,7 @@ public class FilmService {
 
     }
 
-
+    private void logQueryInfo(String query, List<String> by, List<Film> films) {
+        log.info("Получен список фильмов по запросу '{}'. Поиск по {}: list: {}", query, by, films);
+    }
 }
