@@ -102,12 +102,12 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<Long> getLikes(long id) {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
     public List<FeedEntity> getFeed(long id) {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override

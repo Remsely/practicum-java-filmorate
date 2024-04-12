@@ -27,6 +27,5 @@ public class Review {
     @JsonProperty("isPositive")
     private Boolean isPositive;
 
-    // Расчетное значение полезности отзыва
-    private Long useful;
+    private Long useful; // Расчетное значение полезности отзыва
 }

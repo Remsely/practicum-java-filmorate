@@ -48,13 +48,13 @@ public class UserController {
     }
 
     @GetMapping
-    public List<User> getUsers() {
+    public List<User> getAllUsers() {
         log.info("Получен GET-запрос к /users.");
         return userService.getAllUsers();
     }
 
     @PutMapping("/{id}/friends/{followerId}")
-    public User putFriend(@PathVariable long id, @PathVariable long followerId) {
+    public User addFriend(@PathVariable long id, @PathVariable long followerId) {
         log.info("Получен PUT-запрос к /users/{}/friends/{}.", id, followerId);
         return userService.addFriend(id, followerId);
     }

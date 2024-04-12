@@ -54,25 +54,25 @@ public class ReviewController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable long id, @PathVariable long userId) {
+    public void addReviewLike(@PathVariable long id, @PathVariable long userId) {
         log.info("Получен PUT-запрос: /reviews/{}/like/{}", id, userId);
         reviewService.addLike(id, userId);
     }
 
     @PutMapping("/{id}/dislike/{userId}")
-    public void addDislike(@PathVariable long id, @PathVariable long userId) {
+    public void addReviewDislike(@PathVariable long id, @PathVariable long userId) {
         log.info("Получен PUT-запрос: /reviews/{}/dislike/{}", id, userId);
         reviewService.addDislike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@PathVariable long id, @PathVariable long userId) {
+    public void removeReviewLike(@PathVariable long id, @PathVariable long userId) {
         log.info("Получен DELETE-запрос: /reviews/{}/like/{}", id, userId);
         reviewService.removeLike(id, userId);
     }
 
     @DeleteMapping("/{id}/dislike/{userId}")
-    public void removeDislike(@PathVariable long id, @PathVariable long userId) {
+    public void removeReviewDislike(@PathVariable long id, @PathVariable long userId) {
         log.info("Получен DELETE-запрос: /reviews/{}/dislike/{}", id, userId);
         reviewService.removeDislike(id, userId);
     }

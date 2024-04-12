@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @Slf4j
@@ -48,7 +47,7 @@ public class FilmController {
     }
 
     @GetMapping
-    public List<Film> getFilms() {
+    public List<Film> getAllFilms() {
         log.info("Получен GET-запрос к /films.");
         return filmService.getAllFilms();
     }
@@ -89,7 +88,7 @@ public class FilmController {
     }
 
     @GetMapping("/search")
-    public List<Film> search(@RequestParam(name = "query", required = true) String query, @RequestParam(name = "by", defaultValue = "title") List<@NotBlank String> by) {
+    public List<Film> searchFilms(@RequestParam(name = "query", required = true) String query, @RequestParam(name = "by", defaultValue = "title") List<String> by) {
         log.info("Получен GET-запрос к /films/search?query=" + query + "&by=" + by);
         return filmService.search(query, by);
     }

@@ -7,11 +7,10 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
-import ru.yandex.practicum.filmorate.exception.FilmAttributeNotExistOnFilmCreationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
-
+import javax.transaction.Transactional;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -56,31 +55,20 @@ public class DirectorDbStorage implements DirectorStorage {
     }
 
     @Override
-    public void delete(long id) {
-        checkDirectorExist(id);
-        String sqlQuery = "DELETE FROM director WHERE director_id = ?";
-        jdbcTemplate.update(sqlQuery, id);
-    }
-
-    @Override
     public List<Director> getAll() {
         String sqlQuery = "SELECT * FROM director";
         return jdbcTemplate.query(sqlQuery, this::mapRowDirector);
     }
 
     @Override
-    public List<Director> addDirectors(long id, List<Director> directors) {
+    public List<Director> addDirectors(long filmId, List<Director> directors) {
         if (directors != null && !directors.isEmpty()) {
-            Set<Director> uniqFilmDirectors = new HashSet<>(directors);
-
-            for (Director director : uniqFilmDirectors) {
-                long directorId = director.getId();
-
-                checkFilmDirectorExist(directorId);
-
-                String sqlQuery = "INSERT INTO film_director (film_id, director_id) VALUES (?, ?)";
-                jdbcTemplate.update(sqlQuery, id, directorId);
-            }
+            String sqlQuery = "INSERT INTO film_director (film_id, director_id) VALUES (?, ?)";
+            jdbcTemplate.batchUpdate(sqlQuery, directors, directors.size(),
+                    (PreparedStatement ps, Director d) -> {
+                        ps.setLong(1, filmId);
+                        ps.setLong(2, d.getId());
+                    });
         }
         return directors;
     }
@@ -89,6 +77,27 @@ public class DirectorDbStorage implements DirectorStorage {
     public List<Director> getFilmDirectors(long id) {
         String sqlQuery = "SELECT * FROM film_director WHERE film_id = ?";
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> this.get(rs.getLong("director_id")), id);
+    }
+
+    @Override
+    public List<Director> getDirectorsWithName(String name) {
+        String nameStr = "%" + name.toLowerCase() + "%";
+        String sqlQuery = "SELECT * FROM director WHERE LOWER(name) LIKE ?";
+        return jdbcTemplate.query(sqlQuery, this::mapRowDirector, nameStr);
+    }
+
+    @Transactional
+    @Override
+    public void updateFilmDirectors(long filmId, List<Director> directors) {
+        deleteFilmDirectors(filmId);
+        addDirectors(filmId, directors);
+    }
+
+    @Override
+    public void delete(long id) {
+        checkDirectorExist(id);
+        String sqlQuery = "DELETE FROM director WHERE director_id = ?";
+        jdbcTemplate.update(sqlQuery, id);
     }
 
     @Override
@@ -104,11 +113,12 @@ public class DirectorDbStorage implements DirectorStorage {
         return count != null && count == 0;
     }
 
-    @Override
-    public boolean filmNotContainDirector(long filmId, long directorId) {
-        String sqlQuery = "SELECT COUNT(*) FROM film_director WHERE director_id = ? AND film_id = ?";
-        Integer count = jdbcTemplate.queryForObject(sqlQuery, Integer.class, directorId, filmId);
-        return count != null && count == 0;
+    private void checkDirectorExist(long id) {
+        if (this.notContainDirector(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("Director id", String.format("Не найден режиссер с ID: %d.", id))
+            );
+        }
     }
 
     private Director mapRowDirector(ResultSet rs, int rowNum) throws SQLException {
@@ -116,21 +126,5 @@ public class DirectorDbStorage implements DirectorStorage {
                 .id(rs.getLong("director_id"))
                 .name(rs.getString("name"))
                 .build();
-    }
-
-    private void checkFilmDirectorExist(long id) {
-        if (notContainDirector(id)) {
-            throw new FilmAttributeNotExistOnFilmCreationException(
-                    new ErrorResponse("Director id", String.format("Не найден режиссер с Id: %d.", id))
-            );
-        }
-    }
-
-    private void checkDirectorExist(long id) {
-        if (this.notContainDirector(id)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("Director id", String.format("Не найден режиссер с ID: %d.", id))
-            );
-        }
     }
 }

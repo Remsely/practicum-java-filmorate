@@ -97,12 +97,11 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getFilmWithName(String name) {
-        return null;
+        return Collections.emptyList();
     }
 
-    // Добавлен так как есть в интерфейсе "FilmStorage"
     @Override
-    public List<Film> getDirectorSortedFilms(long id, String sortBy) {
+    public List<Film> getDirectorSortedFilms(Long id, String sortBy) {
         return new ArrayList<>();
     }
 
@@ -110,5 +109,4 @@ public class InMemoryFilmStorage implements FilmStorage {
     public List<Film> getPopularFilm(int count, Long genreId, Integer year) {
         return new ArrayList<Film>();
     }
-
 }
