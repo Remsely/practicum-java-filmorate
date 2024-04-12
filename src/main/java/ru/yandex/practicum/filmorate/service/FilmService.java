@@ -162,6 +162,7 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilm(int count, Long id, Integer year) {
+
         List<Film> films = filmStorage.getPopularFilm(count, id, year);
         log.info("Получен список {} самых популярных фильмов с genre_id = {} и release = {}" +
                 " List<Film>: {} ", count, id, year, films);
