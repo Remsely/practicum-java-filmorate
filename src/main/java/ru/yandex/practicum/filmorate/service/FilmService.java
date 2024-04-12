@@ -149,7 +149,6 @@ public class FilmService {
         log.info("Получен список {} самых популярных фильмов с genre_id = {} и release = {}" +
                 " List<Film>: {} ", count, id, year, films);
         return films;
-
     }
 
     private void logQueryInfo(String query, List<String> by, List<Film> films) {
