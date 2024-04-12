@@ -22,7 +22,7 @@ public class DirectorController {
     }
 
     @GetMapping
-    public List<Director> getDirectors() {
+    public List<Director> getAllDirectors() {
         log.info("Получен GET-запрос к /directors.");
         return directorService.getAllDirectors();
     }

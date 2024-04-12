@@ -25,8 +25,8 @@ public class MPAService {
     }
 
     public List<MPA> getAllRatings() {
-        List<MPA> mpas = mpaStorage.getAll();
-        log.info("Получен список всех MPA-рейтингов. List<MPA>: {}", mpas);
-        return mpas;
+        List<MPA> mpaList = mpaStorage.getAll();
+        log.info("Получен список всех MPA-рейтингов. List<MPA>: {}", mpaList);
+        return mpaList;
     }
 }

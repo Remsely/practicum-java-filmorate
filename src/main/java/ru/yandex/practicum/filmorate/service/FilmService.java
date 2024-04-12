@@ -186,5 +186,4 @@ public class FilmService {
     private void logQueryInfo(String query, List<String> by, List<Film> films) {
         log.info("Получен список фильмов по запросу '{}'. Поиск по {}: list: {}", query, by, films);
     }
-
 }

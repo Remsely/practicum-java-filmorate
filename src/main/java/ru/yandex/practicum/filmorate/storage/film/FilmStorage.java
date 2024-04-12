@@ -12,15 +12,11 @@ public interface FilmStorage {
 
     Film get(long id);
 
-    void delete(long id);
-
-    List<Film> getAll();
-
     Film addLike(long id, long userId);
 
     Film removeLike(long id, long userId);
 
-    Set<Long> getLikes(long id);
+    List<Film> getAll();
 
     List<Film> getPopular(int count);
 
@@ -30,9 +26,13 @@ public interface FilmStorage {
 
     List<Film> getPopularFilmSortedByGenreAndYear(int count, long genreId, Integer year);
 
-    boolean notContainFilm(long id);
-
     List<Film> getFilmWithName(String name);
 
-    List<Film> getDirectorSortedFilms(long id, String sortBy);
+    List<Film> getDirectorSortedFilms(Long id, String sortBy);
+
+    Set<Long> getLikes(long id);
+
+    void delete(long id);
+
+    boolean notContainFilm(long id);
 }

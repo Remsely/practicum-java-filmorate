@@ -119,9 +119,8 @@ public class InMemoryFilmStorage implements FilmStorage {
         return null;
     }
 
-    // Добавлен так как есть в интерфейсе "FilmStorage"
     @Override
-    public List<Film> getDirectorSortedFilms(long id, String sortBy) {
+    public List<Film> getDirectorSortedFilms(Long id, String sortBy) {
         return new ArrayList<>();
     }
 

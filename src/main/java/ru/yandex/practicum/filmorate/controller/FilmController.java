@@ -45,7 +45,7 @@ public class FilmController {
     }
 
     @GetMapping
-    public List<Film> getFilms() {
+    public List<Film> getAllFilms() {
         log.info("Получен GET-запрос к /films.");
         return filmService.getAllFilms();
     }

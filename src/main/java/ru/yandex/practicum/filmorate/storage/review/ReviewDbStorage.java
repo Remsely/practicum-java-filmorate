@@ -16,9 +16,10 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Component
-public class ReviewDbStorage {
+public class ReviewDbStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
 
+    @Override
     public Optional<Review> add(Review review) {
         String sqlQuery =
                 "INSERT INTO review (content, user_id, film_id, is_positive) " +
@@ -39,6 +40,7 @@ public class ReviewDbStorage {
         return getReview(id);
     }
 
+    @Override
     public Optional<Review> update(Review review) {
         String sqlQuery =
                 "UPDATE review SET content = ?, is_positive = ? WHERE review_id = ?";
@@ -49,6 +51,7 @@ public class ReviewDbStorage {
         return getReview(review.getId());
     }
 
+    @Override
     public Review delete(long id) {
         Optional<Review> reviewOptional = getReview(id);
 
@@ -58,6 +61,7 @@ public class ReviewDbStorage {
         return reviewOptional.orElse(null);
     }
 
+    @Override
     public Optional<Review> getReview(long id) {
         String sqlQuery = getBaseCommand() +
                 "WHERE review_id = ?";
@@ -68,6 +72,7 @@ public class ReviewDbStorage {
         return Optional.empty();
     }
 
+    @Override
     public List<Review> getAllReviews(int count) {
         String sqlQuery = getBaseCommand() +
                 "ORDER BY useful DESC " +
@@ -81,6 +86,7 @@ public class ReviewDbStorage {
         return list;
     }
 
+    @Override
     public List<Review> getFilmReviews(long filmId, int count) {
         String sqlQuery = getBaseCommand() +
                 "WHERE film_id = ? " +
@@ -95,30 +101,35 @@ public class ReviewDbStorage {
         return list;
     }
 
+    @Override
     public void addLike(long id, long userId) {
         String sqlQuery =
                 "MERGE INTO like_review (user_id, review_id, usefull) VALUES (?, ?, true)";
         jdbcTemplate.update(sqlQuery, userId, id);
     }
 
+    @Override
     public void addDislike(long id, long userId) {
         String sqlQuery =
                 "MERGE INTO like_review (user_id, review_id, usefull) VALUES (?, ?, false)";
         jdbcTemplate.update(sqlQuery, userId, id);
     }
 
+    @Override
     public void removeLike(long id, long userId) {
         String sqlQuery =
                 "DELETE FROM like_review WHERE user_id = ? AND review_id = ?";
         jdbcTemplate.update(sqlQuery, userId, id);
     }
 
+    @Override
     public void removeDislike(long id, long userId) {
         String sqlQuery =
                 "DELETE FROM like_review WHERE user_id = ? AND review_id = ?";
         jdbcTemplate.update(sqlQuery, userId, id);
     }
 
+    @Override
     public boolean notContainReview(long reviewId) {
         String sqlQuery = "SELECT review_id FROM review WHERE review_id = ?";
         SqlRowSet rows = jdbcTemplate.queryForRowSet(sqlQuery, reviewId);

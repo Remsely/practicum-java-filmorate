@@ -113,13 +113,6 @@ public class DirectorDbStorage implements DirectorStorage {
         return count != null && count == 0;
     }
 
-    @Override
-    public boolean filmNotContainDirector(long filmId, long directorId) {
-        String sqlQuery = "SELECT COUNT(*) FROM film_director WHERE director_id = ? AND film_id = ?";
-        Integer count = jdbcTemplate.queryForObject(sqlQuery, Integer.class, directorId, filmId);
-        return count != null && count == 0;
-    }
-
     private void checkDirectorExist(long id) {
         if (this.notContainDirector(id)) {
             throw new EntityNotFoundException(

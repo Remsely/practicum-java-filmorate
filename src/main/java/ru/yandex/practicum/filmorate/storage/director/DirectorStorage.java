@@ -11,21 +11,20 @@ public interface DirectorStorage {
 
     Director update(Director director);
 
-    void delete(long id);
-
-    List<Director> getDirectorsWithName(String name);
-
-    void deleteFilmDirectors(long id);
-
     List<Director> getAll();
 
-    boolean notContainDirector(long id);
+    List<Director> getDirectorsWithName(String name);
 
     List<Director> addDirectors(long id, List<Director> directors);
 
     List<Director> getFilmDirectors(long id);
 
+    void delete(long id);
+
+    void deleteFilmDirectors(long id);
+
     void updateFilmDirectors(long id, List<Director> directors);
 
-    boolean filmNotContainDirector(long filmId, long directorId);
+    boolean notContainDirector(long id);
+
 }

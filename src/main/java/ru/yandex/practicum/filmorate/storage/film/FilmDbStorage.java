@@ -196,29 +196,23 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getDirectorSortedFilms(long directorId, String sortBy) {
-        if (directorStorage.notContainDirector(directorId)) {
+    public List<Film> getDirectorSortedFilms(Long directorId, String sortBy) {
+        if (directorId != null && directorStorage.notContainDirector(directorId)) {
             throw new EntityNotFoundException(
                     new ErrorResponse("Director id", String.format("Не найден режиссер с ID: %d.", directorId))
             );
         }
 
-        String sqlQuery;
-        if ("year".equals(sortBy)) {
-            sqlQuery = "SELECT film.film_id " +
-                    "FROM film " +
-                    "JOIN film_director ON film.film_id = film_director.film_id " +
-                    "WHERE film_director.director_id = ? " +
-                    "ORDER BY film.release";
-        } else {
-            sqlQuery = "SELECT film.film_id " +
-                    "FROM film " +
-                    "JOIN film_director ON film.film_id = film_director.film_id " +
-                    "LEFT JOIN like_film ON film.film_id = like_film.film_id " +
-                    "WHERE film_director.director_id = ? " +
-                    "GROUP BY film.film_id " +
-                    "ORDER BY COUNT(like_film.film_id) DESC";
-        }
+        String sqlQuery = "SELECT f.film_id " +
+                "FROM film f " +
+                "JOIN film_director fd ON f.film_id = fd.film_id " +
+                (sortBy != null && "year".equals(sortBy) ? "WHERE fd.director_id = ? " +
+                "ORDER BY f.release" :
+                "LEFT JOIN like_film lf ON f.film_id = lf.film_id " +
+                "WHERE fd.director_id = ? " +
+                "GROUP BY f.film_id " +
+                "ORDER BY COUNT(lf.film_id) DESC");
+
         return jdbcTemplate.query(sqlQuery, new Object[]{directorId}, this::mapRowToSortedFilms);
     }
 

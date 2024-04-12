@@ -12,7 +12,7 @@ import ru.yandex.practicum.filmorate.model.feed.FeedEventType;
 import ru.yandex.practicum.filmorate.model.feed.FeedOperation;
 import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.review.ReviewDbStorage;
+import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
@@ -21,14 +21,14 @@ import java.util.Optional;
 @Slf4j
 @Service
 public class ReviewService {
-    private final ReviewDbStorage reviewStorage;
+    private final ReviewStorage reviewStorage;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
     private final FeedStorage feedStorage;
 
     @Autowired
     public ReviewService(
-            ReviewDbStorage reviewStorage,
+            ReviewStorage reviewStorage,
             @Qualifier("userDbStorage") UserStorage userStorage,
             @Qualifier("filmDbStorage") FilmStorage filmStorage,
             @Qualifier("feedDbStorage") FeedStorage feedStorage) {
@@ -65,9 +65,6 @@ public class ReviewService {
         return savedReview.get();
     }
 
-    // При обновлении отзыва проверка на валидность фильма и пользователя не производится,
-    // т.к. пользователь может редактировать только свой отзыв на тот фильм, на который
-    // был написан отзыв
     public Review updateReview(Review review) {
         long reviewId = review.getId();
         long filmId = review.getFilmId();

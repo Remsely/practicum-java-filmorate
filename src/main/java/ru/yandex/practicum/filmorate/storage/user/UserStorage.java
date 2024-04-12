@@ -14,13 +14,11 @@ public interface UserStorage {
 
     User get(long id);
 
-    void delete(long id);
-
-    List<User> getAll();
-
     User addFriend(long id, long friendId);
 
     User removeFriend(long id, long friendId);
+
+    List<User> getAll();
 
     List<User> getFriends(long id);
 
@@ -30,7 +28,9 @@ public interface UserStorage {
 
     List<FeedEntity> getFeed(long id);
 
-    boolean notContainUser(long id);
+    Map<Long, Set<Long>> findUsersWithLikes();
 
-    public Map<Long, Set<Long>> findUsersWithLikes();
+    void delete(long id);
+
+    boolean notContainUser(long id);
 }

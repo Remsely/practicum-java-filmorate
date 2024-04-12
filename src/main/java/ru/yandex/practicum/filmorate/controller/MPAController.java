@@ -23,13 +23,13 @@ public class MPAController {
     }
 
     @GetMapping("/{id}")
-    public MPA getFilm(@PathVariable long id) {
+    public MPA getRating(@PathVariable long id) {
         log.info("Получен GET-запрос к /mpa/{}.", id);
         return mpaService.getRating(id);
     }
 
     @GetMapping
-    public List<MPA> getFilms() {
+    public List<MPA> getAllRatings() {
         log.info("Получен GET-запрос к /mpa.");
         return mpaService.getAllRatings();
     }
