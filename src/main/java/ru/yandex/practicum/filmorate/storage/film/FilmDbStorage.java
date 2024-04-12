@@ -220,10 +220,9 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilm(int count, Long genreId, Integer year) {
-        String sqlQuery = "SELECT * " +
+        String sqlQuery = "SELECT fl.* " +
                 "FROM film fl " +
                 "LEFT JOIN like_film li ON li.film_id = fl.film_id " +
-                "JOIN mpa_rating mr ON fl.rating_id = mr.rating_id " +
                 (genreId != null ? "JOIN film_genre fg ON fl.film_id = fg.film_id" +
                         " WHERE fg.genre_id = " + genreId + " " : "") +
                 (year != null ? (genreId != null ? "AND" : "WHERE") + " EXTRACT(YEAR FROM CAST(fl.release AS" +
@@ -233,5 +232,4 @@ public class FilmDbStorage implements FilmStorage {
                 "LIMIT " + count;
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm);
     }
-
 }
