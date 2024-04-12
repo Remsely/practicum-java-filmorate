@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -132,17 +131,19 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    @Query
     public List<Film> getPopularFilm(int count, Long genreId, Integer year) {
-        String sqlQuery = "SELECT f.* FROM film f " +
-                "LEFT JOIN like_film lf on f.film_id = lf.film_id " +
-                "LEFT JOIN film_genre fg ON f.film_id = fg.film_id " +
-                "WHERE (:genreId is null or fg.genre_id = :genreId) " +
-                "AND (:year is null or year(f.release) = :year)" +
-                "GROUP BY f.film_id, fg.genre_id " +
-                "ORDER BY COUNT(lf.user_id) DESC " +
-                "LIMIT ?";
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, year, count);
+        String sqlQuery = "SELECT * " +
+                "FROM film fl " +
+                "LEFT JOIN like_film li ON li.film_id = fl.film_id " +
+                "JOIN mpa_rating mr ON fl.rating_id = mr.rating_id " +
+                (genreId != null ? "JOIN film_genre fg ON fl.film_id = fg.film_id" +
+                        " WHERE fg.genre_id = " + genreId + " " : "") +
+                (year != null ? (genreId != null ? "AND" : "WHERE") + " EXTRACT(YEAR FROM CAST(fl.release AS" +
+                        " TIMESTAMP)) = " + year + " " : "") +
+                "GROUP BY fl.film_id " +
+                "ORDER BY COUNT(li.film_id) DESC " +
+                "LIMIT " + count;
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm);
     }
 
     @Override

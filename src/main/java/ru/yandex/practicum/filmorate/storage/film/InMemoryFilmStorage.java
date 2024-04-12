@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
@@ -80,6 +79,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     public List<Film> getPopularFilm(int count, Long genreId, Integer year) {
         return null;
     }
+
     @Override
     public Set<Long> getLikes(long id) {
         if (this.notContainFilm(id)) {

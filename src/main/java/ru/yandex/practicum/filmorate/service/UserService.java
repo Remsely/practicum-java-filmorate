@@ -15,7 +15,9 @@ import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -124,14 +126,15 @@ public class UserService {
     public Set<Film> getRecommendations(Long id) {
         if (userStorage.notContainUser(id)) {
             throw new EntityNotFoundException(
-                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
+                    new ErrorResponse("User id", String.format("пользователь с id: %d не найден.", id))
             );
         }
         Set<Film> result = new HashSet<>();
         Set<Long> allUsersId = getAllUsers().stream().map(User::getId).collect(Collectors.toSet());
 
-        long intersectionAmount = 0;
-        long otherUserInterception = -1;
+        log.info("Поиск пользователя с наибольшим пересечением");
+        long maxInters = 0;
+        long userIdWithMaxInters = -1;
         Set<Long> filmsIdRecommended = null;
 
         for (Long otherUserId : allUsersId) {
@@ -139,15 +142,17 @@ public class UserService {
                 Set<Long> likesListByOtherUser = userStorage.findFilmsWithLikes(otherUserId);
                 Set<Long> intersectionList = new HashSet<>(userStorage.findFilmsWithLikes(id));
                 intersectionList.retainAll(likesListByOtherUser);
-                if (intersectionList.size() > intersectionAmount) {
-                    intersectionAmount = intersectionList.size();
-                    otherUserInterception = otherUserId;
+                if (intersectionList.size() > maxInters) {
+                    maxInters = intersectionList.size();
+                    userIdWithMaxInters = otherUserId;
                     intersectionList.forEach(likesListByOtherUser::remove);
                     filmsIdRecommended = likesListByOtherUser;
                 }
             }
         }
-        if (otherUserInterception != -1 || filmsIdRecommended != null) {
+
+        log.info("Фильмы пользователя с наибольшим пересечением");
+        if (userIdWithMaxInters != -1 || filmsIdRecommended != null) {
             filmsIdRecommended.forEach(filmId -> result.add(filmStorage.get(filmId)));
         }
         return result;
