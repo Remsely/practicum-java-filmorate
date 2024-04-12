@@ -16,6 +16,8 @@ public interface FilmStorage {
 
     List<Film> getAll();
 
+    List<Film> getFilmWithDirectorName(String name);
+
     Film addLike(long id, long userId);
 
     Film removeLike(long id, long userId);

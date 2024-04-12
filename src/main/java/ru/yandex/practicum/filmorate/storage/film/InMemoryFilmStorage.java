@@ -63,6 +63,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getFilmWithDirectorName(String name) {
+        return null;
+    }
+
+    @Override
     public Film addLike(long id, long userId) {
         Film film = this.get(id);
         film.getLikes().add(userId);

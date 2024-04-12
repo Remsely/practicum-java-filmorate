@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
-import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.enumarate.ChoosingSearch;
@@ -16,7 +15,6 @@ import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -148,7 +146,6 @@ public class FilmService {
 
     }
 
-    // DIRECTOR.Получить список фильмов режиссера отсортированных по количеству лайков или году выпуска.
     public List<Film> getDirectorFilmsList(long id, String sortBy) {
         List<Film> films = filmStorage.getDirectorSortedFilms(id, sortBy);
         log.info("Получен список фильмов режисера Director Id: {}, " +
@@ -156,7 +153,6 @@ public class FilmService {
         return films;
     }
 
-    //Поиск
     public List<Film> search(String query, List<String> by) {
         int len = by.size();
         if (len == 1 && by.get(0).equals(String.valueOf(ChoosingSearch.title))) {
@@ -164,21 +160,12 @@ public class FilmService {
             logQueryInfo(query, by, films);
             return films;
         } else if (len == 1 && by.get(0).equals(String.valueOf(ChoosingSearch.director))) {
-            List<Director> director = directorStorage.getDirectorsWithName(query);
-            List<Film> films = new ArrayList<>();
-            for (Director dir : director) {
-                films.addAll(filmStorage.getDirectorSortedFilms(dir.getId(), "likes"));
-            }
+            List<Film> films = filmStorage.getFilmWithDirectorName(query);
             logQueryInfo(query, by, films);
             return films;
         } else {
-            List<Film> films = new ArrayList<>();
-
-            directorStorage.getDirectorsWithName(query).forEach(
-                    director -> films.addAll(filmStorage.getDirectorSortedFilms(director.getId(), "likes"))
-            );
+            List<Film> films = filmStorage.getFilmWithDirectorName(query);
             films.addAll(filmStorage.getFilmWithName(query));
-
             logQueryInfo(query, by, films);
             return films;
         }

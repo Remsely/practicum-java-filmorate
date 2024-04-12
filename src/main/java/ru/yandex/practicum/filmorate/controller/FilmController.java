@@ -2,16 +2,19 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
+@Validated
 public class FilmController {
     private final FilmService filmService;
 
@@ -86,7 +89,7 @@ public class FilmController {
     }
 
     @GetMapping("/search")
-    public List<Film> search(@RequestParam(name = "query", required = true) String query, @RequestParam(name = "by", defaultValue = "title") List<String> by) {
+    public List<Film> search(@RequestParam(name = "query", required = true) String query, @RequestParam(name = "by", defaultValue = "title") List<@NotBlank String> by) {
         log.info("Получен GET-запрос к /films/search?query=" + query + "&by=" + by);
         return filmService.search(query, by);
     }
