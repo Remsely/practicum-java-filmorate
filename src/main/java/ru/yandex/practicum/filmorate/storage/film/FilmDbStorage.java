@@ -131,57 +131,6 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopular(int count) {
-        String sqlQuery =
-                "SELECT f.* " +
-                        "FROM film AS f " +
-                        "LEFT JOIN ( " +
-                        "    SELECT film_id, COUNT(*) AS like_count " +
-                        "    FROM like_film " +
-                        "    GROUP BY film_id " +
-                        ") l ON f.film_id = l.film_id " +
-                        "ORDER BY l.like_count DESC " +
-                        "LIMIT ?";
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, count);
-    }
-
-    @Override
-    public List<Film> getPopularFilmSortedByGenreAndYear(int count, long genreId, Integer year) {
-        String sqlQuery = "SELECT f.* FROM film f " +
-                "LEFT JOIN like_film lf on f.film_id = lf.film_id " +
-                "LEFT JOIN film_genre fg ON f.film_id = fg.film_id " +
-                "WHERE fg.genre_id = ? AND year(f.release) = ? " +
-                "GROUP BY  f.film_id, fg.genre_id " +
-                "ORDER BY COUNT(lf.user_id) DESC " +
-                "LIMIT ?";
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, year, count);
-    }
-
-    @Override
-    public List<Film> getPopularFilmSortedByYear(int count, Integer year) {
-        String sqlQuery = "SELECT f.* FROM film f " +
-                "LEFT JOIN like_film lf on f.film_id = lf.film_id " +
-                "WHERE year(f.release) = ? " +
-                "GROUP BY  f.film_id " +
-                "ORDER BY COUNT(lf.user_id) DESC " +
-                "LIMIT ?";
-
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, year, count);
-    }
-
-    @Override
-    public List<Film> getPopularFilmSortedByGenre(int count, long genreId) {
-        String sqlQuery = "SELECT f.* FROM film f " +
-                "LEFT JOIN like_film lf on f.film_id = lf.film_id " +
-                "LEFT JOIN film_genre fg ON f.film_id = fg.film_id " +
-                "WHERE fg.genre_id = ? " +
-                "GROUP BY  f.film_id, fg.genre_id " +
-                "ORDER BY COUNT(lf.user_id) DESC " +
-                "LIMIT ?";
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, genreId, count);
-    }
-
-    @Override
     public Set<Long> getLikes(long id) {
         checkFilmExist(id);
         String sqlQuery = "SELECT user_id FROM like_film WHERE film_id = ?";
@@ -259,4 +208,21 @@ public class FilmDbStorage implements FilmStorage {
             );
         }
     }
+
+    @Override
+    public List<Film> getPopularFilm(int count, Long genreId, Integer year) {
+        String sqlQuery = "SELECT * " +
+                "FROM film fl " +
+                "LEFT JOIN like_film li ON li.film_id = fl.film_id " +
+                "JOIN mpa_rating mr ON fl.rating_id = mr.rating_id " +
+                (genreId != null ? "JOIN film_genre fg ON fl.film_id = fg.film_id" +
+                        " WHERE fg.genre_id = " + genreId + " " : "") +
+                (year != null ? (genreId != null ? "AND" : "WHERE") + " EXTRACT(YEAR FROM CAST(fl.release AS" +
+                        " TIMESTAMP)) = " + year + " " : "") +
+                "GROUP BY fl.film_id " +
+                "ORDER BY COUNT(li.film_id) DESC " +
+                "LIMIT " + count;
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm);
+    }
+
 }
