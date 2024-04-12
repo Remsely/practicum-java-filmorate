@@ -211,6 +211,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilm(int count, Long genreId, Integer year) {
+
         String sqlQuery = "SELECT * " +
                 "FROM film fl " +
                 "LEFT JOIN like_film li ON li.film_id = fl.film_id " +

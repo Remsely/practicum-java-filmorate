@@ -124,6 +124,7 @@ public class UserService {
     }
 
     public Set<Film> getRecommendations(Long id) {
+
         if (userStorage.notContainUser(id)) {
             throw new EntityNotFoundException(
                     new ErrorResponse("User id", String.format("пользователь с id: %d не найден.", id))
