@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MPAStorage;
 
-import javax.transaction.Transactional;
 import java.sql.*;
 import java.util.HashSet;
 import java.util.List;
@@ -64,7 +63,6 @@ public class FilmDbStorage implements FilmStorage {
         return this.get(id);
     }
 
-    @Transactional
     @Override
     public Film update(Film film) {
         long id = film.getId();
@@ -181,12 +179,12 @@ public class FilmDbStorage implements FilmStorage {
         String sqlQuery = "SELECT f.film_id " +
                 "FROM film f " +
                 "JOIN film_director fd ON f.film_id = fd.film_id " +
-                    (sortBy != null && "year".equals(sortBy) ? "WHERE fd.director_id = ? " +
-                            "ORDER BY f.release" :
-                "LEFT JOIN like_film lf ON f.film_id = lf.film_id " +
-                "WHERE fd.director_id = ? " +
-                "GROUP BY f.film_id " +
-                "ORDER BY COUNT(lf.film_id) DESC");
+                ("year".equals(sortBy) ? "WHERE fd.director_id = ? " +
+                        "ORDER BY f.release" :
+                        "LEFT JOIN like_film lf ON f.film_id = lf.film_id " +
+                                "WHERE fd.director_id = ? " +
+                                "GROUP BY f.film_id " +
+                                "ORDER BY COUNT(lf.film_id) DESC");
 
         return jdbcTemplate.query(sqlQuery, new Object[]{directorId}, this::mapRowToSortedFilms);
     }
