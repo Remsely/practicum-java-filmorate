@@ -18,19 +18,15 @@ public interface FilmStorage {
 
     List<Film> getAll();
 
-    List<Film> getPopular(int count);
-
-    List<Film> getPopularFilmSortedByYear(int count, Integer year);
-
-    List<Film> getPopularFilmSortedByGenre(int count, long genreId);
-
-    List<Film> getPopularFilmSortedByGenreAndYear(int count, long genreId, Integer year);
+    List<Film> getFilmWithDirectorName(String name);
 
     List<Film> getFilmWithName(String name);
 
     List<Film> getDirectorSortedFilms(Long id, String sortBy);
 
     Set<Long> getLikes(long id);
+
+    List<Film> getPopularFilm(int count, Long genreId, Integer year);
 
     void delete(long id);
 

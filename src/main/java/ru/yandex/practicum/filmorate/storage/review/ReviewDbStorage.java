@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.review;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -9,7 +10,8 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.PreparedStatement;
-import java.util.ArrayList;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -65,11 +67,12 @@ public class ReviewDbStorage implements ReviewStorage {
     public Optional<Review> getReview(long id) {
         String sqlQuery = getBaseCommand() +
                 "WHERE review_id = ?";
-        SqlRowSet rows = jdbcTemplate.queryForRowSet(sqlQuery, id);
-        if (rows.next()) {
-            return Optional.of(mapRowToReview(rows));
+
+        try {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sqlQuery, this::mapRowToReview, id));
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
         }
-        return Optional.empty();
     }
 
     @Override
@@ -77,13 +80,7 @@ public class ReviewDbStorage implements ReviewStorage {
         String sqlQuery = getBaseCommand() +
                 "ORDER BY useful DESC " +
                 "LIMIT ? ";
-        SqlRowSet rows = jdbcTemplate.queryForRowSet(sqlQuery, count);
-
-        List<Review> list = new ArrayList<>();
-        while (rows.next()) {
-            list.add(mapRowToReview(rows));
-        }
-        return list;
+        return jdbcTemplate.query(sqlQuery, this::mapRowToReview, count);
     }
 
     @Override
@@ -92,13 +89,7 @@ public class ReviewDbStorage implements ReviewStorage {
                 "WHERE film_id = ? " +
                 "ORDER BY useful DESC " +
                 "LIMIT ? ";
-        SqlRowSet rows = jdbcTemplate.queryForRowSet(sqlQuery, filmId, count);
-
-        List<Review> list = new ArrayList<>();
-        while (rows.next()) {
-            list.add(mapRowToReview(rows));
-        }
-        return list;
+        return jdbcTemplate.query(sqlQuery, this::mapRowToReview, filmId, count);
     }
 
     @Override
@@ -147,7 +138,7 @@ public class ReviewDbStorage implements ReviewStorage {
                 "FROM review as r \n ";
     }
 
-    private Review mapRowToReview(SqlRowSet rs) {
+    private Review mapRowToReview(ResultSet rs, int rowNum) throws SQLException {
         return Review.builder()
                 .id(rs.getLong("review_id"))
                 .content(rs.getString("content"))

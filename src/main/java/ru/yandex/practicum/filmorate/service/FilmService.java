@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
-import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.enumarate.ChoosingSearch;
@@ -16,7 +15,6 @@ import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -111,33 +109,6 @@ public class FilmService {
         return film;
     }
 
-    public List<Film> getPopular(int count, Long id, Integer year) {
-        if (year != null && id != null) {
-            List<Film> films = filmStorage.getPopularFilmSortedByGenreAndYear(count, id, year);
-            log.info("Получен список {} самых популярных фильмов с genre_id = {} и release = {}" +
-                    " List<Film>: {} ", count, id, year, films);
-            return films;
-        }
-        if (year != null && id == null) {
-            List<Film> films = filmStorage.getPopularFilmSortedByYear(count, year);
-            log.info("Получен список {} самых популярных фильмов с release = {} " +
-                    "List<Film>: {}", count, year, films);
-            return films;
-        }
-
-        if (year == null && id != null) {
-            List<Film> films = filmStorage.getPopularFilmSortedByGenre(count, id);
-            log.info("Получен список {} самых популярных фильмов с genre_id = {} " +
-                    "List<Film>: {}", count, id, films);
-            return films;
-        }
-
-        List<Film> films = filmStorage.getPopular(count);
-        log.info("Получен список {} самых популярных фильмов. List<Film>: {}", count, films);
-        return films;
-
-    }
-
     public List<Film> getCommonFilm(long userId, long friendId) {
         List<Long> likeUser = userStorage.getLikes(userId);
         List<Long> friendUser = userStorage.getLikes(friendId);
@@ -155,7 +126,6 @@ public class FilmService {
         return films;
     }
 
-    //Поиск
     public List<Film> search(String query, List<String> by) {
         int len = by.size();
         if (len == 1 && by.get(0).equals(String.valueOf(ChoosingSearch.title))) {
@@ -163,21 +133,12 @@ public class FilmService {
             logQueryInfo(query, by, films);
             return films;
         } else if (len == 1 && by.get(0).equals(String.valueOf(ChoosingSearch.director))) {
-            List<Director> director = directorStorage.getDirectorsWithName(query);
-            List<Film> films = new ArrayList<>();
-            for (Director dir : director) {
-                films.addAll(filmStorage.getDirectorSortedFilms(dir.getId(), "likes"));
-            }
+            List<Film> films = filmStorage.getFilmWithDirectorName(query);
             logQueryInfo(query, by, films);
             return films;
         } else {
-            List<Film> films = new ArrayList<>();
-
-            directorStorage.getDirectorsWithName(query).forEach(
-                    director -> films.addAll(filmStorage.getDirectorSortedFilms(director.getId(), "likes"))
-            );
+            List<Film> films = filmStorage.getFilmWithDirectorName(query);
             films.addAll(filmStorage.getFilmWithName(query));
-
             logQueryInfo(query, by, films);
             return films;
         }
@@ -186,4 +147,14 @@ public class FilmService {
     private void logQueryInfo(String query, List<String> by, List<Film> films) {
         log.info("Получен список фильмов по запросу '{}'. Поиск по {}: list: {}", query, by, films);
     }
+
+    public List<Film> getPopularFilm(int count, Long id, Integer year) {
+        List<Film> films = filmStorage.getPopularFilm(count, id, year);
+        log.info("Получен список {} самых популярных фильмов с genre_id = {} и release = {}" +
+                " List<Film>: {} ", count, id, year, films);
+        return films;
+
+    }
+
+
 }

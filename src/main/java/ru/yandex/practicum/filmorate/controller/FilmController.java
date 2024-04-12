@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -12,6 +13,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/films")
+@Validated
 public class FilmController {
     private final FilmService filmService;
 
@@ -68,7 +70,7 @@ public class FilmController {
                                  @RequestParam(required = false) Integer year) {
 
         log.info("Получен GET-запрос к /popular/count={}/genreId={}/year={}.", count, genreId, year);
-        return filmService.getPopular(count, genreId, year);
+        return filmService.getPopularFilm(count, genreId, year);
     }
 
     @GetMapping("/common")

@@ -9,7 +9,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.model.Director;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -117,26 +116,5 @@ public class DirectorDbStorageTest {
         List<Director> directors = directorStorage.getAll();
         assertThat(directors)
                 .isEmpty();
-    }
-
-    @Test
-    public void testGetDirectorsWithName() {
-        Director director = Director.builder()
-                .id(1L)
-                .name("Mega Famous Director 1")
-                .build();
-        Director director2 = Director.builder()
-                .id(2L)
-                .name("Famous Director 2")
-                .build();
-        directorStorage.add(director);
-        directorStorage.add(director2);
-        List<Director> expList = new ArrayList<>();
-        expList.add(director);
-        List<Director> directorsList = directorStorage.getDirectorsWithName("meGA");
-        assertThat(directorsList)
-                .isNotEmpty()
-                .isNotNull()
-                .isEqualTo(expList);
     }
 }

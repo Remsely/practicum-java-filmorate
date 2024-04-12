@@ -125,7 +125,7 @@ public class ReviewService {
         return reviews;
     }
 
-    public List<Review> getFilmReviews(long filmId, int count) {
+    public List<Review> getFilmReviews(Long filmId, int count) {
         List<Review> reviews = reviewStorage.getFilmReviews(filmId, count);
         log.info("Получен список отзывов на фильм с id {} (count {})", filmId, count);
         return reviews;

@@ -130,25 +130,17 @@ LEFT JOIN (SELECT film_id, COUNT(*) AS like_count
 ORDER BY l.like_count DESC
 LIMIT ?;
 ```
-- Получить рейтинг фильмов режиссера по количеству лайков/году выпуска
-
-По Year:
+- Получить рейтинг фильмов режиссера по количеству лайков или году выпуска
 ```sql
-SELECT film.film_id
-FROM film
-JOIN film_director ON film.film_id = film_director.film_id
-WHERE film_director.director_id = ?
-ORDER BY film.release;
-```
-По Likes:
-```sql
-SELECT film.film_id
-FROM film
-JOIN film_director ON film.film_id = film_director.film_id
-LEFT JOIN like_film ON film.film_id = like_film.film_id
-WHERE film_director.director_id = ?
-GROUP BY film.film_id
-ORDER BY COUNT(like_film.film_id) DESC;
+SELECT f.film_id 
+FROM film f 
+JOIN film_director fd ON f.film_id = fd.film_id 
+(sortBy != null && "year".equals(sortBy) ? "WHERE fd.director_id = ? 
+ORDER BY f.release" : 
+LEFT JOIN like_film lf ON f.film_id = lf.film_id 
+WHERE fd.director_id = ? 
+GROUP BY f.film_id 
+ORDER BY COUNT(lf.film_id) DESC");
 ```
 - Добавить фильм
 ```sql
@@ -635,35 +627,15 @@ ORDER BY COUNT(like_film.film_id) DESC;
 
 - По жанру и году
 ```sql
-SELECT f.* 
+SELECT f.film_id 
 FROM film f 
-LEFT JOIN like_film lf on f.film_id = lf.film_id 
-LEFT JOIN film_genre fg ON f.film_id = fg.film_id 
-WHERE fg.genre_id = ? AND year(f.release) = ? 
-GROUP BY f.film_id, fg.genre_id 
-ORDER BY COUNT(lf.user_id) DESC 
-LIMIT ?;
-```
-- По жанру
-```sql
-SELECT f.* 
-FROM film f 
-LEFT JOIN like_film lf on f.film_id = lf.film_id 
-LEFT JOIN film_genre fg ON f.film_id = fg.film_id 
-WHERE fg.genre_id = ? 
-GROUP BY f.film_id, fg.genre_id 
-ORDER BY COUNT(lf.user_id) DESC 
-LIMIT ?;
-```
-- За указаный год
-```sql
-SELECT f.* 
-FROM film f 
-LEFT JOIN like_film lf on f.film_id = lf.film_id 
-WHERE year(f.release) = ? 
+JOIN film_director fd ON f.film_id = fd.film_id 
+(sortBy != null && "year".equals(sortBy) ? "WHERE fd.director_id = ? 
+ORDER BY f.release" :
+LEFT JOIN like_film lf ON f.film_id = lf.film_id 
+WHERE fd.director_id = ? 
 GROUP BY f.film_id 
-ORDER BY COUNT(lf.user_id) DESC 
-LIMIT ?;
+ORDER BY COUNT(lf.film_id) DESC;
 ```
 </details>
 

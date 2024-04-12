@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
@@ -63,6 +62,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getFilmWithDirectorName(String name) {
+        return null;
+    }
+
+    @Override
     public Film addLike(long id, long userId) {
         Film film = this.get(id);
         film.getLikes().add(userId);
@@ -74,29 +78,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         Film film = this.get(id);
         film.getLikes().remove(userId);
         return film;
-    }
-
-    @Override
-    public List<Film> getPopular(int count) {
-        return data.values().stream()
-                .sorted(Comparator.comparingInt(film -> -film.getLikes().size()))
-                .limit(count)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<Film> getPopularFilmSortedByYear(int count, Integer year) {
-        return new ArrayList<>();
-    }
-
-    @Override
-    public List<Film> getPopularFilmSortedByGenre(int count, long genreId) {
-        return new ArrayList<>();
-    }
-
-    @Override
-    public List<Film> getPopularFilmSortedByGenreAndYear(int count, long genreId, Integer year) {
-        return new ArrayList<>();
     }
 
     @Override
@@ -116,7 +97,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getFilmWithName(String name) {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -124,4 +105,8 @@ public class InMemoryFilmStorage implements FilmStorage {
         return new ArrayList<>();
     }
 
+    @Override
+    public List<Film> getPopularFilm(int count, Long genreId, Integer year) {
+        return new ArrayList<Film>();
+    }
 }

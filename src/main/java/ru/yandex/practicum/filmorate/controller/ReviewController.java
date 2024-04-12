@@ -46,9 +46,6 @@ public class ReviewController {
                 @RequestParam(defaultValue = "10") int count) {
         log.info("Получен GET-запрос: /reviews?filmId={}&count={}", filmId, count);
 
-        // Для получения списка отзывов здесь используется два метода. Можно было бы использовать один, и передавать
-        // Optional-параметр для filmId, однако Idea на такие финты выдает предупреждение.
-        // https://www.baeldung.com/java-optional#misuages
         if (filmId == null) {
             return reviewService.getAllReviews(count);
         } else {

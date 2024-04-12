@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.model.User;
@@ -35,12 +36,13 @@ public class FilmDbStorageTest {
     private final JdbcTemplate jdbcTemplate;
     private FilmStorage filmStorage;
     private UserStorage userStorage;
+    private DirectorStorage directorStorage;
 
     @BeforeEach
     void init() {
         GenreStorage genreStorage = new GenreDbStorage(jdbcTemplate);
         MPAStorage mpaStorage = new MPADbStorage(jdbcTemplate);
-        DirectorStorage directorStorage = new DirectorDbStorage(jdbcTemplate);
+        directorStorage = new DirectorDbStorage(jdbcTemplate);
         filmStorage = new FilmDbStorage(jdbcTemplate, genreStorage, mpaStorage, directorStorage);
         userStorage = new UserDbStorage(jdbcTemplate);
     }
@@ -403,7 +405,7 @@ public class FilmDbStorageTest {
 
         filmStorage.addLike(2, 2);
 
-        List<Film> popularFilms = filmStorage.getPopular(10);
+        List<Film> popularFilms = filmStorage.getPopularFilm(10, null, null);
 
         assertThat(popularFilms.size()).isEqualTo(4);
         assertThat(popularFilms.get(0).getId()).isEqualTo(3L);
@@ -411,7 +413,7 @@ public class FilmDbStorageTest {
         assertThat(popularFilms.get(2).getId()).isEqualTo(2L);
         assertThat(popularFilms.get(3).getId()).isEqualTo(4L);
 
-        popularFilms = filmStorage.getPopular(2);
+        popularFilms = filmStorage.getPopularFilm(2, null, null);
 
         assertThat(popularFilms.size()).isEqualTo(2);
         assertThat(popularFilms.get(0).getId()).isEqualTo(3L);
@@ -419,7 +421,7 @@ public class FilmDbStorageTest {
     }
 
     @Test
-    public void testGetDirectorsWithName() {
+    public void testGetFilmWithName() {
         Film film1 = Film.builder()
                 .id(1L)
                 .name("Film1TestYes")
@@ -448,6 +450,42 @@ public class FilmDbStorageTest {
         List<Film> expList = new ArrayList<>();
         expList.add(film1);
         List<Film> directorsList = filmStorage.getFilmWithName("teSTyEs");
+        assertThat(directorsList)
+                .isNotEmpty()
+                .isNotNull()
+                .isEqualTo(expList);
+    }
+
+    @Test
+    public void testGetFilmWithDirectorsName() {
+        Director director = Director.builder()
+                .id(1L)
+                .name("Mega Famous Director 1")
+                .build();
+        Director director2 = Director.builder()
+                .id(2L)
+                .name("Famous Director 2")
+                .build();
+        Film film = Film.builder()
+                .id(1L)
+                .name("Film1")
+                .description("Description1")
+                .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
+                .mpa(new MPA(1L, "G"))
+                .releaseDate(LocalDate.of(2020, 8, 25))
+                .duration(100)
+                .likes(Collections.emptySet())
+                .build();
+        directorStorage.add(director);
+        directorStorage.add(director2);
+        List<Director> directorList = new ArrayList<>();
+        directorList.add(director);
+        film.setDirectors(directorList);
+        filmStorage.add(film);
+        List<Film> expList = new ArrayList<>();
+        expList.add(film);
+        List<Film> directorsList = filmStorage.getFilmWithDirectorName("meGA");
         assertThat(directorsList)
                 .isNotEmpty()
                 .isNotNull()
