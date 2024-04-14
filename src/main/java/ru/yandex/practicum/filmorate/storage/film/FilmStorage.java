@@ -35,4 +35,6 @@ public interface FilmStorage {
     boolean notContainFilm(long id);
 
     List<Film> getRecommendations(Long id);
+
+    List<Film> search(String query, List<String> by);
 }

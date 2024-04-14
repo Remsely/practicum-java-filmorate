@@ -9,15 +9,14 @@ import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.FilmAttributeNotExistOnFilmCreationException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enumarate.ChoosingSearch;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MPAStorage;
 
 import java.sql.*;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.sql.Date;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Component
@@ -119,7 +118,7 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM FILM f " +
                 "JOIN FILM_DIRECTOR fd ON f.FILM_ID  = fd.FILM_ID " +
                 "JOIN DIRECTOR d ON d.DIRECTOR_ID  = fd.DIRECTOR_ID " +
-                "left join like_film l on l.film_id = f.film_id " +
+                "LEFT JOIN like_film l ON l.film_id = f.film_id " +
                 "WHERE LOWER(d.NAME) LIKE ? " +
                 "GROUP BY f.film_id " +
                 "ORDER BY COUNT(l.film_id)";
@@ -164,7 +163,7 @@ public class FilmDbStorage implements FilmStorage {
         String nameStr = "%" + name.toLowerCase() + "%";
         String sqlQuery = "SELECT f.* " +
                 "FROM film f " +
-                "left join like_film l on l.film_id = f.film_id " +
+                "LEFT JOIN like_film l ON l.film_id = f.film_id " +
                 "WHERE LOWER(f.name) LIKE ? " +
                 "GROUP BY f.film_id " +
                 "ORDER BY COUNT(l.film_id)";
@@ -225,6 +224,43 @@ public class FilmDbStorage implements FilmStorage {
                         "    ORDER BY count(*) DESC " +
                         "    LIMIT 1) ";
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, id, id, id);
+    }
+
+    @Override
+    public List<Film> search(String query, List<String> by) {
+        String searchStr = "%" + query.toLowerCase() + "%";
+        List<Object> args = new ArrayList<>();
+
+        StringBuilder conditions = new StringBuilder();
+        if (by.contains(String.valueOf(ChoosingSearch.title))) {
+            conditions.append("LOWER(name) like ? \n");
+            args.add(searchStr);
+        }
+        if (by.contains(String.valueOf(ChoosingSearch.director))) {
+            if (conditions.length() > 0) {
+                conditions.append(" OR ");
+            }
+            conditions.append(" film_id IN ( " +
+                    "SELECT fd.film_id " +
+                    "FROM film_director AS fd " +
+                    "  INNER JOIN director AS d ON fd.director_id = d.director_id " +
+                    "WHERE LOWER(d.name) LIKE ? " +
+                    ") ");
+            args.add(searchStr);
+        }
+        if (conditions.length() > 0) {
+            conditions.insert(0, "WHERE ");
+        }
+
+        String sqlQuery = "SELECT " +
+                "  film.*, (SELECT COUNT(*) FROM like_film WHERE film.film_id = like_film.film_id) as likes " +
+                "FROM film " +
+                conditions +
+                "ORDER BY likes DESC";
+
+        return jdbcTemplate.query(sqlQuery,
+                args.toArray(),
+                this::mapRowToFilm);
     }
 
     @Override
