@@ -271,10 +271,4 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
-    @Override
-    public Set<Long> findFilmsWithLikes(Long id) {
-
-        String sql = "SELECT film_id FROM like_film WHERE user_id = ?";
-        return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("film_id"), id));
-    }
 }

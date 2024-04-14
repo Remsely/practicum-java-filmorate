@@ -101,6 +101,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getRecommendations(Long id) {
+        return List.of();
+    }
+
+    @Override
     public List<Film> getFilmWithName(String name) {
         return Collections.emptyList();
     }

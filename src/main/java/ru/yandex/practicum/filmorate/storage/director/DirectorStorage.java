@@ -13,8 +13,6 @@ public interface DirectorStorage {
 
     List<Director> getAll();
 
-    List<Director> getDirectorsWithName(String name);
-
     List<Director> addDirectors(long id, List<Director> directors);
 
     List<Director> getFilmDirectors(long id);

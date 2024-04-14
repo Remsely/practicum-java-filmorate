@@ -33,4 +33,6 @@ public interface FilmStorage {
     void delete(long id);
 
     boolean notContainFilm(long id);
+
+    List<Film> getRecommendations(Long id);
 }

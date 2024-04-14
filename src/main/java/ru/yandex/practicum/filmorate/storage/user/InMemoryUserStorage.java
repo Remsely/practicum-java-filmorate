@@ -115,9 +115,4 @@ public class InMemoryUserStorage implements UserStorage {
         return !data.containsKey(id);
     }
 
-    @Override
-    public Set<Long> findFilmsWithLikes(Long id) {
-        return new HashSet<>();
-    }
-
 }

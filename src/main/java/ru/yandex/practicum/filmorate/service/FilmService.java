@@ -14,7 +14,7 @@ import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -124,10 +124,10 @@ public class FilmService {
             logQueryInfo(query, by, films);
             return films;
         } else {
-            List<Film> films = filmStorage.getFilmWithDirectorName(query);
+            Set<Film> films = new TreeSet<>(Comparator.comparingInt((Film film) -> film.getLikes().size()).reversed());
+            films.addAll(filmStorage.getFilmWithDirectorName(query));
             films.addAll(filmStorage.getFilmWithName(query));
-            logQueryInfo(query, by, films);
-            return films;
+            return new ArrayList<>(films);
         }
     }
 

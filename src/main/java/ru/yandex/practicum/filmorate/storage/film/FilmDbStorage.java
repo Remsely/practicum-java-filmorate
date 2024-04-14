@@ -115,11 +115,14 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getFilmWithDirectorName(String name) {
         String nameStr = "%" + name.toLowerCase() + "%";
-        String sqlQuery = "SELECT f.*\n" +
-                "FROM FILM f  \n" +
-                "JOIN FILM_DIRECTOR fd ON f.FILM_ID  = fd.FILM_ID \n" +
-                "JOIN DIRECTOR d ON d.DIRECTOR_ID  = fd.DIRECTOR_ID \n" +
-                "WHERE LOWER(d.NAME) LIKE ?";
+        String sqlQuery = "SELECT f.*" +
+                "FROM FILM f " +
+                "JOIN FILM_DIRECTOR fd ON f.FILM_ID  = fd.FILM_ID " +
+                "JOIN DIRECTOR d ON d.DIRECTOR_ID  = fd.DIRECTOR_ID " +
+                "left join like_film l on l.film_id = f.film_id " +
+                "WHERE LOWER(d.NAME) LIKE ? " +
+                "GROUP BY f.film_id " +
+                "ORDER BY COUNT(l.film_id)";
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, nameStr);
     }
 
@@ -159,7 +162,12 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getFilmWithName(String name) {
         String nameStr = "%" + name.toLowerCase() + "%";
-        String sqlQuery = "SELECT * FROM film WHERE LOWER(name) LIKE ?";
+        String sqlQuery = "SELECT f.* " +
+                "FROM film f " +
+                "left join like_film l on l.film_id = f.film_id " +
+                "WHERE LOWER(f.name) LIKE ? " +
+                "GROUP BY f.film_id " +
+                "ORDER BY COUNT(l.film_id)";
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, nameStr);
     }
 
@@ -197,6 +205,26 @@ public class FilmDbStorage implements FilmStorage {
                                 "ORDER BY COUNT(lf.film_id) DESC");
 
         return jdbcTemplate.query(sqlQuery, new Object[]{directorId}, this::mapRowToSortedFilms);
+    }
+
+    @Override
+    public List<Film> getRecommendations(Long id) {
+        String sqlQuery =
+                "SELECT film.* " +
+                        "FROM film " +
+                        "  INNER JOIN like_film AS u2 ON film.film_id = u2.film_id " +
+                        "  LEFT JOIN like_film AS u1 ON u2.film_id = u1.film_id and u1.user_id = ? " +
+                        "WHERE u1.film_id IS NULL " +
+                        "  AND u2.user_id = ( " +
+                        "    SELECT u2.user_id " +
+                        "    FROM like_film AS u1 " +
+                        "      INNER JOIN like_film AS u2 ON u1.film_id = u2.film_id " +
+                        "    WHERE u1.user_id = ? " +
+                        "      AND u2.user_id <> ? " +
+                        "    GROUP BY u2.user_id " +
+                        "    ORDER BY count(*) DESC " +
+                        "    LIMIT 1) ";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, id, id, id);
     }
 
     @Override
