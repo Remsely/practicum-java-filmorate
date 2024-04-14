@@ -118,7 +118,7 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM FILM f " +
                 "JOIN FILM_DIRECTOR fd ON f.FILM_ID  = fd.FILM_ID " +
                 "JOIN DIRECTOR d ON d.DIRECTOR_ID  = fd.DIRECTOR_ID " +
-                "left join like_film l on l.film_id = f.film_id " +
+                "LEFT JOIN like_film l ON l.film_id = f.film_id " +
                 "WHERE LOWER(d.NAME) LIKE ? " +
                 "GROUP BY f.film_id " +
                 "ORDER BY COUNT(l.film_id)";
@@ -163,7 +163,7 @@ public class FilmDbStorage implements FilmStorage {
         String nameStr = "%" + name.toLowerCase() + "%";
         String sqlQuery = "SELECT f.* " +
                 "FROM film f " +
-                "left join like_film l on l.film_id = f.film_id " +
+                "LEFT JOIN like_film l ON l.film_id = f.film_id " +
                 "WHERE LOWER(f.name) LIKE ? " +
                 "GROUP BY f.film_id " +
                 "ORDER BY COUNT(l.film_id)";
