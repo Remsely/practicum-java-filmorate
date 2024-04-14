@@ -114,6 +114,8 @@ public class FilmService {
     }
 
     public List<Film> search(String query, List<String> by) {
+        return null;
+        /*
         int len = by.size();
         if (len == 1 && by.get(0).equals(String.valueOf(ChoosingSearch.title))) {
             List<Film> films = filmStorage.getFilmWithName(query);
@@ -129,6 +131,7 @@ public class FilmService {
             logQueryInfo(query, by, films);
             return films;
         }
+        */
     }
 
     public List<Film> getPopularFilm(int count, Long id, Integer year) {

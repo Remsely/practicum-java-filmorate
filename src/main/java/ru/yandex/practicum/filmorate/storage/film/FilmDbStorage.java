@@ -2,6 +2,8 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
@@ -235,6 +237,25 @@ public class FilmDbStorage implements FilmStorage {
                                 "ORDER BY COUNT(lf.film_id) DESC");
 
         return jdbcTemplate.query(sqlQuery, new Object[]{directorId}, this::mapRowToSortedFilms);
+    }
+
+    public List<Film> getRecommendations(Long id) {
+        String sqlQuery =
+                "SELECT film.* \n " +
+                "FROM film \n " +
+                "  INNER JOIN like_film AS u2 ON film.film_id = u2.film_id \n " +
+                "  LEFT JOIN like_film AS u1 ON u2.film_id = u1.film_id and u1.user_id = ? \n " +
+                "WHERE u1.film_id IS NULL \n " +
+                "  AND u2.user_id = ( \n " +
+                "    SELECT u2.user_id \n " +
+                "    FROM like_film AS u1 \n " +
+                "      INNER JOIN like_film AS u2 ON u1.film_id = u2.film_id \n " +
+                "    WHERE u1.user_id = ? \n " +
+                "      AND u2.user_id <> ? \n " +
+                "    GROUP BY u2.user_id \n " +
+                "    ORDER BY count(*) DESC \n " +
+                "    LIMIT 1 ) ";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, id, id, id);
     }
 
     @Override

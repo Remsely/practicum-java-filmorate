@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -85,6 +86,7 @@ public class UserController {
     @GetMapping("/{id}/recommendations")
     public List<Film> getRecommendations(@PathVariable long id) {
         List<Film> recommendedFilms = userService.getRecommendations(id);
+
         log.info("Получен GET-запрос к /users/{}/recommendations.", id);
         return recommendedFilms;
     }

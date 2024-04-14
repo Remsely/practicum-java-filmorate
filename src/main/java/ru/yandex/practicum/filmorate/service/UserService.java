@@ -15,7 +15,10 @@ import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -120,7 +123,8 @@ public class UserService {
         return userStorage.getFeed(userId);
     }
 
-    public List<Film> getRecommendations(Long id) {
+    public Set<Film> getRecommendations(Long id) {
+
         if (userStorage.notContainUser(id)) {
             throw new EntityNotFoundException(
                     new ErrorResponse("User id", String.format("пользователь с id: %d не найден.", id))
@@ -130,4 +134,5 @@ public class UserService {
         log.info("Получен список рекомендованных фильмов для пользователя с id {}. List<Film>: {}", id, recommendations);
         return recommendations;
     }
+
 }
