@@ -9,15 +9,14 @@ import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.FilmAttributeNotExistOnFilmCreationException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enumarate.ChoosingSearch;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MPAStorage;
 
 import java.sql.*;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.sql.Date;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Component
@@ -225,6 +224,43 @@ public class FilmDbStorage implements FilmStorage {
                         "    ORDER BY count(*) DESC " +
                         "    LIMIT 1) ";
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, id, id, id);
+    }
+
+    @Override
+    public List<Film> search(String query, List<String> by) {
+        String searchStr = "%" + query.toLowerCase() + "%";
+        List<Object> args = new ArrayList<>();
+
+        StringBuilder conditions = new StringBuilder();
+        if (by.contains(String.valueOf(ChoosingSearch.title))) {
+            conditions.append("LOWER(name) like ? \n");
+            args.add(searchStr);
+        }
+        if (by.contains(String.valueOf(ChoosingSearch.director))) {
+            if (conditions.length() > 0) {
+                conditions.append(" OR ");
+            }
+            conditions.append(" film_id IN ( \n " +
+                    "SELECT fd.film_id \n " +
+                    "FROM film_director AS fd \n " +
+                    "  INNER JOIN director AS d ON fd.director_id = d.director_id \n " +
+                    "WHERE LOWER(d.name) LIKE ? \n " +
+                    ") \n ");
+            args.add(searchStr);
+        }
+        if (conditions.length() > 0) {
+            conditions.insert(0, "WHERE ");
+        }
+
+        String sqlQuery = "SELECT \n " +
+                "  film.*, (SELECT COUNT(*) FROM like_film WHERE film.film_id = like_film.film_id) as likes \n " +
+                "FROM film \n " +
+                conditions +
+                "ORDER BY likes DESC";
+
+        return jdbcTemplate.query(sqlQuery,
+                args.toArray(),
+                this::mapRowToFilm);
     }
 
     @Override

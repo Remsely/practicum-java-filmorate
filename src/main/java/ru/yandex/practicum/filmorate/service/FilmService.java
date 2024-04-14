@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.enumarate.ChoosingSearch;
 import ru.yandex.practicum.filmorate.model.feed.FeedEventType;
 import ru.yandex.practicum.filmorate.model.feed.FeedOperation;
 import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
@@ -114,21 +113,9 @@ public class FilmService {
     }
 
     public List<Film> search(String query, List<String> by) {
-        int len = by.size();
-        if (len == 1 && by.get(0).equals(String.valueOf(ChoosingSearch.title))) {
-            List<Film> films = filmStorage.getFilmWithName(query);
-            logQueryInfo(query, by, films);
-            return films;
-        } else if (len == 1 && by.get(0).equals(String.valueOf(ChoosingSearch.director))) {
-            List<Film> films = filmStorage.getFilmWithDirectorName(query);
-            logQueryInfo(query, by, films);
-            return films;
-        } else {
-            Set<Film> films = new TreeSet<>(Comparator.comparingInt((Film film) -> film.getLikes().size()).reversed());
-            films.addAll(filmStorage.getFilmWithDirectorName(query));
-            films.addAll(filmStorage.getFilmWithName(query));
-            return new ArrayList<>(films);
-        }
+        List<Film> films = filmStorage.search(query, by);
+        log.info("Получен список фильмов по строке поиска {} по критериям {}", query, by);
+        return films;
     }
 
     public List<Film> getPopularFilm(int count, Long id, Integer year) {
