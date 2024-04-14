@@ -4,7 +4,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.feed.FeedEntity;
 
 import java.util.List;
-import java.util.Set;
 
 public interface UserStorage {
     User add(User user);
@@ -26,8 +25,6 @@ public interface UserStorage {
     List<Long> getLikes(long id);
 
     List<FeedEntity> getFeed(long id);
-
-    Set<Long> findFilmsWithLikes(Long id);
 
     void delete(long id);
 

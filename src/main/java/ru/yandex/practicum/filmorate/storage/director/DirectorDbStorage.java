@@ -14,7 +14,8 @@ import javax.transaction.Transactional;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -77,13 +78,6 @@ public class DirectorDbStorage implements DirectorStorage {
     public List<Director> getFilmDirectors(long id) {
         String sqlQuery = "SELECT * FROM film_director WHERE film_id = ?";
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> this.get(rs.getLong("director_id")), id);
-    }
-
-    @Override
-    public List<Director> getDirectorsWithName(String name) {
-        String nameStr = "%" + name.toLowerCase() + "%";
-        String sqlQuery = "SELECT * FROM director WHERE LOWER(name) LIKE ?";
-        return jdbcTemplate.query(sqlQuery, this::mapRowDirector, nameStr);
     }
 
     @Transactional

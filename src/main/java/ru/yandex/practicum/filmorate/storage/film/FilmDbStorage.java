@@ -13,9 +13,11 @@ import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MPAStorage;
 
-import java.sql.Date;
 import java.sql.*;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Component
@@ -113,11 +115,14 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getFilmWithDirectorName(String name) {
         String nameStr = "%" + name.toLowerCase() + "%";
-        String sqlQuery = "SELECT f.*\n" +
-                "FROM FILM f  \n" +
-                "JOIN FILM_DIRECTOR fd ON f.FILM_ID  = fd.FILM_ID \n" +
-                "JOIN DIRECTOR d ON d.DIRECTOR_ID  = fd.DIRECTOR_ID \n" +
-                "WHERE LOWER(d.NAME) LIKE ?";
+        String sqlQuery = "SELECT f.*" +
+                "FROM FILM f " +
+                "JOIN FILM_DIRECTOR fd ON f.FILM_ID  = fd.FILM_ID " +
+                "JOIN DIRECTOR d ON d.DIRECTOR_ID  = fd.DIRECTOR_ID " +
+                "left join like_film l on l.film_id = f.film_id " +
+                "WHERE LOWER(d.NAME) LIKE ? " +
+                "GROUP BY f.film_id " +
+                "ORDER BY COUNT(l.film_id)";
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, nameStr);
     }
 
@@ -157,7 +162,12 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getFilmWithName(String name) {
         String nameStr = "%" + name.toLowerCase() + "%";
-        String sqlQuery = "SELECT * FROM film WHERE LOWER(name) LIKE ?";
+        String sqlQuery = "SELECT f.* " +
+                "FROM film f " +
+                "left join like_film l on l.film_id = f.film_id " +
+                "WHERE LOWER(f.name) LIKE ? " +
+                "GROUP BY f.film_id " +
+                "ORDER BY COUNT(l.film_id)";
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, nameStr);
     }
 
@@ -174,46 +184,6 @@ public class FilmDbStorage implements FilmStorage {
                 "ORDER BY COUNT(li.film_id) DESC " +
                 "LIMIT " + count;
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm);
-    }
-
-    @Override
-    public Optional<Long> getUserIdWithMostIntersections(long userId) {
-        String sqlQuery = "SELECT lf1.user_id AS id " +
-                "FROM like_film AS lf1 " +
-                "JOIN like_film AS lf2  " +
-                "    ON lf1.film_id = lf2.film_id  " +
-                "    AND lf2.user_id <> lf1.user_id  " +
-                "    AND lf2.user_id = ? " +
-                "GROUP BY lf1.user_id  " +
-                "ORDER BY COUNT(lf2.user_id) DESC " +
-                "LIMIT 1";
-        return jdbcTemplate.query(
-                sqlQuery,
-                new Object[]{userId},
-                rs -> {
-                    if (rs.next()) {
-                        return Optional.of(rs.getLong("id"));
-                    } else {
-                        return Optional.empty();
-                    }
-                }
-        );
-    }
-
-    @Override
-    public List<Film> getRecommendationFilms(long id) {
-        Optional<Long> userIdWithMostIntersections = this.getUserIdWithMostIntersections(id);
-
-        if (userIdWithMostIntersections.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        String sqlQuery = "SELECT f.* " +
-                "FROM like_film AS lf1 " +
-                "         LEFT JOIN like_film AS lf2 ON lf1.film_id = lf2.film_id AND lf2.user_id = ? " +
-                "         JOIN film AS f ON lf1.film_id = f.film_id " +
-                "WHERE lf1.user_id = ? AND lf2.film_id IS NULL";
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, id, userIdWithMostIntersections.get());
     }
 
     @Override
@@ -237,22 +207,23 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sqlQuery, new Object[]{directorId}, this::mapRowToSortedFilms);
     }
 
+    @Override
     public List<Film> getRecommendations(Long id) {
         String sqlQuery =
-                "SELECT film.* \n " +
-                "FROM film \n " +
-                "  INNER JOIN like_film AS u2 ON film.film_id = u2.film_id \n " +
-                "  LEFT JOIN like_film AS u1 ON u2.film_id = u1.film_id and u1.user_id = ? \n " +
-                "WHERE u1.film_id IS NULL \n " +
-                "  AND u2.user_id = ( \n " +
-                "    SELECT u2.user_id \n " +
-                "    FROM like_film AS u1 \n " +
-                "      INNER JOIN like_film AS u2 ON u1.film_id = u2.film_id \n " +
-                "    WHERE u1.user_id = ? \n " +
-                "      AND u2.user_id <> ? \n " +
-                "    GROUP BY u2.user_id \n " +
-                "    ORDER BY count(*) DESC \n " +
-                "    LIMIT 1 ) ";
+                "SELECT film.* " +
+                        "FROM film " +
+                        "  INNER JOIN like_film AS u2 ON film.film_id = u2.film_id " +
+                        "  LEFT JOIN like_film AS u1 ON u2.film_id = u1.film_id and u1.user_id = ? " +
+                        "WHERE u1.film_id IS NULL " +
+                        "  AND u2.user_id = ( " +
+                        "    SELECT u2.user_id " +
+                        "    FROM like_film AS u1 " +
+                        "      INNER JOIN like_film AS u2 ON u1.film_id = u2.film_id " +
+                        "    WHERE u1.user_id = ? " +
+                        "      AND u2.user_id <> ? " +
+                        "    GROUP BY u2.user_id " +
+                        "    ORDER BY count(*) DESC " +
+                        "    LIMIT 1) ";
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, id, id, id);
     }
 

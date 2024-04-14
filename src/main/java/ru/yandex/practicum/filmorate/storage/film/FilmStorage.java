@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.storage.film;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 public interface FilmStorage {
@@ -31,14 +30,9 @@ public interface FilmStorage {
 
     List<Film> getPopularFilm(int count, Long genreId, Integer year);
 
-    Optional<Long> getUserIdWithMostIntersections(long userId);
-
-    List<Film> getRecommendationFilms(long id);
-
     void delete(long id);
 
     boolean notContainFilm(long id);
 
     List<Film> getRecommendations(Long id);
-
 }

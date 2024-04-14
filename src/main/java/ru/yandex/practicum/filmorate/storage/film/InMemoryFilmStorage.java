@@ -102,7 +102,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getRecommendations(Long id) {
-        return null;
+        return List.of();
     }
 
     @Override
@@ -118,15 +118,5 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public List<Film> getPopularFilm(int count, Long genreId, Integer year) {
         return new ArrayList<>();
-    }
-
-    @Override
-    public Optional<Long> getUserIdWithMostIntersections(long userId) {
-        return Optional.empty();
-    }
-
-    @Override
-    public List<Film> getRecommendationFilms(long id1) {
-        return List.of();
     }
 }
