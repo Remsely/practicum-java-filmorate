@@ -240,21 +240,21 @@ public class FilmDbStorage implements FilmStorage {
             if (conditions.length() > 0) {
                 conditions.append(" OR ");
             }
-            conditions.append(" film_id IN ( \n " +
-                    "SELECT fd.film_id \n " +
-                    "FROM film_director AS fd \n " +
-                    "  INNER JOIN director AS d ON fd.director_id = d.director_id \n " +
-                    "WHERE LOWER(d.name) LIKE ? \n " +
-                    ") \n ");
+            conditions.append(" film_id IN ( " +
+                    "SELECT fd.film_id " +
+                    "FROM film_director AS fd " +
+                    "  INNER JOIN director AS d ON fd.director_id = d.director_id " +
+                    "WHERE LOWER(d.name) LIKE ? " +
+                    ") ");
             args.add(searchStr);
         }
         if (conditions.length() > 0) {
             conditions.insert(0, "WHERE ");
         }
 
-        String sqlQuery = "SELECT \n " +
-                "  film.*, (SELECT COUNT(*) FROM like_film WHERE film.film_id = like_film.film_id) as likes \n " +
-                "FROM film \n " +
+        String sqlQuery = "SELECT " +
+                "  film.*, (SELECT COUNT(*) FROM like_film WHERE film.film_id = like_film.film_id) as likes " +
+                "FROM film " +
                 conditions +
                 "ORDER BY likes DESC";
 
