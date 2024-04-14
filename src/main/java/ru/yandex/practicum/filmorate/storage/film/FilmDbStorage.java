@@ -13,11 +13,9 @@ import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MPAStorage;
 
+import java.sql.Date;
 import java.sql.*;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Component
@@ -176,6 +174,46 @@ public class FilmDbStorage implements FilmStorage {
                 "ORDER BY COUNT(li.film_id) DESC " +
                 "LIMIT " + count;
         return jdbcTemplate.query(sqlQuery, this::mapRowToFilm);
+    }
+
+    @Override
+    public Optional<Long> getUserIdWithMostIntersections(long userId) {
+        String sqlQuery = "SELECT lf1.user_id AS id " +
+                "FROM like_film AS lf1 " +
+                "JOIN like_film AS lf2  " +
+                "    ON lf1.film_id = lf2.film_id  " +
+                "    AND lf2.user_id <> lf1.user_id  " +
+                "    AND lf2.user_id = ? " +
+                "GROUP BY lf1.user_id  " +
+                "ORDER BY COUNT(lf2.user_id) DESC " +
+                "LIMIT 1";
+        return jdbcTemplate.query(
+                sqlQuery,
+                new Object[]{userId},
+                rs -> {
+                    if (rs.next()) {
+                        return Optional.of(rs.getLong("id"));
+                    } else {
+                        return Optional.empty();
+                    }
+                }
+        );
+    }
+
+    @Override
+    public List<Film> getRecommendationFilms(long id) {
+        Optional<Long> userIdWithMostIntersections = this.getUserIdWithMostIntersections(id);
+
+        if (userIdWithMostIntersections.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        String sqlQuery = "SELECT f.* " +
+                "FROM like_film AS lf1 " +
+                "         LEFT JOIN like_film AS lf2 ON lf1.film_id = lf2.film_id AND lf2.user_id = ? " +
+                "         JOIN film AS f ON lf1.film_id = f.film_id " +
+                "WHERE lf1.user_id = ? AND lf2.film_id IS NULL";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, id, userIdWithMostIntersections.get());
     }
 
     @Override
