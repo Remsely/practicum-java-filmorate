@@ -252,7 +252,7 @@ public class FilmDbStorageTest {
     }
 
     @Test
-    public void testGetLikes() {
+    public void testGetFilmLikes() {
         Film film1 = Film.builder()
                 .id(1L)
                 .name("Film1")
@@ -297,13 +297,13 @@ public class FilmDbStorageTest {
         userStorage.add(user2);
         userStorage.add(user3);
 
-        assertThat(filmStorage.getLikes(1).size()).isEqualTo(0);
+        assertThat(filmStorage.getFilmLikes(1).size()).isEqualTo(0);
 
         filmStorage.addLike(1, 1);
         filmStorage.addLike(1, 2);
         filmStorage.addLike(1, 3);
 
-        Set<Long> likes = filmStorage.getLikes(1);
+        Set<Long> likes = filmStorage.getFilmLikes(1);
 
         assertThat(likes.size()).isEqualTo(3);
         assertThat(likes.contains(1L)).isEqualTo(true);

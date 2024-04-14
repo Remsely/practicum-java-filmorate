@@ -81,13 +81,18 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Set<Long> getLikes(long id) {
+    public Set<Long> getFilmLikes(long id) {
         if (this.notContainFilm(id)) {
             throw new EntityNotFoundException(
                     new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
             );
         }
         return data.get(id).getLikes();
+    }
+
+    @Override
+    public List<Film> getCommonFilms(long id1, long id2) {
+        return List.of();
     }
 
     @Override
@@ -107,6 +112,6 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getPopularFilm(int count, Long genreId, Integer year) {
-        return new ArrayList<Film>();
+        return new ArrayList<>();
     }
 }

@@ -140,10 +140,20 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Set<Long> getLikes(long id) {
+    public Set<Long> getFilmLikes(long id) {
         checkFilmExist(id);
         String sqlQuery = "SELECT user_id FROM like_film WHERE film_id = ?";
         return (new HashSet<>(jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getLong("user_id"), id)));
+    }
+
+    @Override
+    public List<Film> getCommonFilms(long id1, long id2) {
+        final String sqlQuery = "SELECT f.* " +
+                "FROM like_film AS lf1 " +
+                "         JOIN like_film AS lf2 ON lf1.film_id = lf2.film_id AND lf2.user_id = ? " +
+                "         JOIN film AS f ON lf1.film_id = f.film_id " +
+                "WHERE lf1.user_id = ?";
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, id1, id2);
     }
 
     @Override
@@ -212,7 +222,7 @@ public class FilmDbStorage implements FilmStorage {
                 .genres(genreStorage.getFilmGenres(id))
                 .directors(directorStorage.getFilmDirectors(id))
                 .mpa(mpaStorage.get(rs.getLong("rating_id")))
-                .likes(this.getLikes(id))
+                .likes(this.getFilmLikes(id))
                 .build();
     }
 

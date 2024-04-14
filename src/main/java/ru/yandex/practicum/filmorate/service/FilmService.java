@@ -10,13 +10,11 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.enumarate.ChoosingSearch;
 import ru.yandex.practicum.filmorate.model.feed.FeedEventType;
 import ru.yandex.practicum.filmorate.model.feed.FeedOperation;
-import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,16 +22,13 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final FeedStorage feedStorage;
-    private final DirectorStorage directorStorage;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
                        @Qualifier("userDbStorage") UserStorage userStorage,
-                       @Qualifier("directorDbStorage") DirectorStorage directorStorage,
                        @Qualifier("feedDbStorage") FeedStorage feedStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
-        this.directorStorage = directorStorage;
         this.feedStorage = feedStorage;
     }
 
@@ -67,11 +62,7 @@ public class FilmService {
     }
 
     public Film addLike(long id, long userId) {
-        if (userStorage.notContainUser(userId)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
-            );
-        }
+        checkUserExist(userId);
 
         Film film = filmStorage.addLike(id, userId);
         log.info("Добавлен лайк фильму с id {} от пользователя с id {}. Film: {}", id, userId, film);
@@ -89,11 +80,8 @@ public class FilmService {
     }
 
     public Film removeLike(long id, long userId) {
-        if (userStorage.notContainUser(userId)) {
-            throw new EntityNotFoundException(
-                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
-            );
-        }
+        checkUserExist(userId);
+
         Film film = filmStorage.removeLike(id, userId);
         log.info("Удален лайк фильму с id {} от пользователя с id {}. Film: {}", id, userId, film);
 
@@ -109,14 +97,13 @@ public class FilmService {
         return film;
     }
 
-    public List<Film> getCommonFilm(long userId, long friendId) {
-        List<Long> likeUser = userStorage.getLikes(userId);
-        List<Long> friendUser = userStorage.getLikes(friendId);
-        return likeUser.stream()
-                .filter(friendUser::contains)
-                .map(this::getFilm)
-                .collect(Collectors.toList());
+    public List<Film> getCommonFilm(long id1, long id2) {
+        checkUserExist(id1);
+        checkUserExist(id2);
 
+        List<Film> commonFilms = filmStorage.getCommonFilms(id1, id2);
+        log.info("Получен список общих фильмов пользователей с id {} и {}. List<Film>: {}", id1, id2, commonFilms);
+        return commonFilms;
     }
 
     public List<Film> getDirectorFilmsList(long id, String sortBy) {
@@ -153,5 +140,13 @@ public class FilmService {
 
     private void logQueryInfo(String query, List<String> by, List<Film> films) {
         log.info("Получен список фильмов по запросу '{}'. Поиск по {}: list: {}", query, by, films);
+    }
+
+    private void checkUserExist(long id) {
+        if (userStorage.notContainUser(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("User id", String.format("Не найден пользователь с ID: %d.", id))
+            );
+        }
     }
 }
