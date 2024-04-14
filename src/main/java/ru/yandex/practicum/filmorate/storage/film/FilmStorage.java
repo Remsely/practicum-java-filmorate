@@ -40,4 +40,5 @@ public interface FilmStorage {
     boolean notContainFilm(long id);
 
     List<Film> getRecommendations(Long id);
+
 }

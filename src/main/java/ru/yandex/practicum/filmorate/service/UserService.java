@@ -123,14 +123,14 @@ public class UserService {
         return userStorage.getFeed(userId);
     }
 
-    public Set<Film> getRecommendations(Long id) {
+    public List<Film> getRecommendations(Long id) {
 
         if (userStorage.notContainUser(id)) {
             throw new EntityNotFoundException(
                     new ErrorResponse("User id", String.format("пользователь с id: %d не найден.", id))
             );
         }
-        List<Film> recommendations = filmStorage.getRecommendationFilms(id);
+        List<Film> recommendations = filmStorage.getRecommendations(id);
         log.info("Получен список рекомендованных фильмов для пользователя с id {}. List<Film>: {}", id, recommendations);
         return recommendations;
     }
