@@ -10,6 +10,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
+import ru.yandex.practicum.filmorate.storage.director.DirectorDbStorage;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MPADbStorage;
@@ -34,7 +36,8 @@ public class GenresDbStorageTest {
     void init() {
         genreStorage = new GenreDbStorage(jdbcTemplate);
         MPAStorage mpaStorage = new MPADbStorage(jdbcTemplate);
-        filmStorage = new FilmDbStorage(jdbcTemplate, genreStorage, mpaStorage);
+        DirectorStorage directorStorage = new DirectorDbStorage(jdbcTemplate);
+        filmStorage = new FilmDbStorage(jdbcTemplate, genreStorage, mpaStorage, directorStorage);
     }
 
     @Test
@@ -53,6 +56,7 @@ public class GenresDbStorageTest {
                 .genres(Arrays.asList(
                         new Genre(1L, "Комедия"), new Genre(3L, "Мультфильм"))
                 )
+                .directors(Collections.emptyList())
                 .mpa(new MPA(1L, "G"))
                 .releaseDate(LocalDate.of(2020, 8, 25))
                 .duration(100)
@@ -78,6 +82,7 @@ public class GenresDbStorageTest {
                 .genres(Arrays.asList(
                         new Genre(1L, "Комедия"), new Genre(3L, "Мультфильм"))
                 )
+                .directors(Collections.emptyList())
                 .mpa(new MPA(1L, "G"))
                 .releaseDate(LocalDate.of(2020, 8, 25))
                 .duration(100)

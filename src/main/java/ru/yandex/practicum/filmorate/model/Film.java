@@ -22,15 +22,17 @@ public class Film {
     @Size(max = 200, message = "Максимальная длинна описания фильма - 200 символов.")
     private String description;
 
-    private List<Genre> genres;
-
-    private MPA mpa;
-
     @AfterDate(lowerBound = "1895-12-28", message = "Дата релиза фильма не может быть раньше 28.12.1895.")
     private LocalDate releaseDate;
 
     @Positive(message = "Продолжительность фильма должна быть положительной.")
     private int duration;
+
+    private MPA mpa;
+
+    private List<Director> directors;
+
+    private List<Genre> genres;
 
     private Set<Long> likes;
 }

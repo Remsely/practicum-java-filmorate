@@ -7,9 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.director.DirectorDbStorage;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreDbStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MPADbStorage;
@@ -18,6 +21,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -32,12 +36,14 @@ public class FilmDbStorageTest {
     private final JdbcTemplate jdbcTemplate;
     private FilmStorage filmStorage;
     private UserStorage userStorage;
+    private DirectorStorage directorStorage;
 
     @BeforeEach
     void init() {
         GenreStorage genreStorage = new GenreDbStorage(jdbcTemplate);
         MPAStorage mpaStorage = new MPADbStorage(jdbcTemplate);
-        filmStorage = new FilmDbStorage(jdbcTemplate, genreStorage, mpaStorage);
+        directorStorage = new DirectorDbStorage(jdbcTemplate);
+        filmStorage = new FilmDbStorage(jdbcTemplate, genreStorage, mpaStorage, directorStorage);
         userStorage = new UserDbStorage(jdbcTemplate);
     }
 
@@ -49,6 +55,7 @@ public class FilmDbStorageTest {
                     .name("Film")
                     .description("Description")
                     .genres(Collections.emptyList())
+                    .directors(Collections.emptyList())
                     .mpa(new MPA(1L, "G"))
                     .releaseDate(LocalDate.of(2020, 8, 25))
                     .duration(100)
@@ -65,6 +72,7 @@ public class FilmDbStorageTest {
                 .name("Film")
                 .description("Description")
                 .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
                 .mpa(new MPA(1L, "G"))
                 .releaseDate(LocalDate.of(2020, 8, 25))
                 .duration(100)
@@ -79,6 +87,7 @@ public class FilmDbStorageTest {
                 .name("Filmmmmmm")
                 .description("Descriptionnnnnnnn")
                 .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
                 .mpa(new MPA(1L, "G"))
                 .releaseDate(LocalDate.of(2020, 8, 25))
                 .duration(100)
@@ -103,6 +112,8 @@ public class FilmDbStorageTest {
                 .name("Film")
                 .description("Description")
                 .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
+                .directors(Collections.emptyList())
                 .mpa(new MPA(1L, "G"))
                 .releaseDate(LocalDate.of(2020, 8, 25))
                 .duration(100)
@@ -126,6 +137,7 @@ public class FilmDbStorageTest {
                 .name("Film1")
                 .description("Description1")
                 .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
                 .mpa(new MPA(1L, "G"))
                 .releaseDate(LocalDate.of(2020, 8, 25))
                 .duration(100)
@@ -137,6 +149,7 @@ public class FilmDbStorageTest {
                 .name("Film2")
                 .description("Description2")
                 .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
                 .mpa(new MPA(1L, "G"))
                 .releaseDate(LocalDate.of(2020, 8, 25))
                 .duration(100)
@@ -148,6 +161,7 @@ public class FilmDbStorageTest {
                 .name("Film3")
                 .description("Description3")
                 .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
                 .mpa(new MPA(1L, "G"))
                 .releaseDate(LocalDate.of(2020, 8, 25))
                 .duration(100)
@@ -174,6 +188,7 @@ public class FilmDbStorageTest {
                 .name("Film1")
                 .description("Description1")
                 .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
                 .mpa(new MPA(1L, "G"))
                 .releaseDate(LocalDate.of(2020, 8, 25))
                 .duration(100)
@@ -209,6 +224,7 @@ public class FilmDbStorageTest {
                 .name("Film1")
                 .description("Description1")
                 .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
                 .mpa(new MPA(1L, "G"))
                 .releaseDate(LocalDate.of(2020, 8, 25))
                 .duration(100)
@@ -236,12 +252,13 @@ public class FilmDbStorageTest {
     }
 
     @Test
-    public void testGetLikes() {
+    public void testGetFilmLikes() {
         Film film1 = Film.builder()
                 .id(1L)
                 .name("Film1")
                 .description("Description1")
                 .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
                 .mpa(new MPA(1L, "G"))
                 .releaseDate(LocalDate.of(2020, 8, 25))
                 .duration(100)
@@ -280,13 +297,13 @@ public class FilmDbStorageTest {
         userStorage.add(user2);
         userStorage.add(user3);
 
-        assertThat(filmStorage.getLikes(1).size()).isEqualTo(0);
+        assertThat(filmStorage.getFilmLikes(1).size()).isEqualTo(0);
 
         filmStorage.addLike(1, 1);
         filmStorage.addLike(1, 2);
         filmStorage.addLike(1, 3);
 
-        Set<Long> likes = filmStorage.getLikes(1);
+        Set<Long> likes = filmStorage.getFilmLikes(1);
 
         assertThat(likes.size()).isEqualTo(3);
         assertThat(likes.contains(1L)).isEqualTo(true);
@@ -301,6 +318,7 @@ public class FilmDbStorageTest {
                 .name("Film1")
                 .description("Description1")
                 .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
                 .mpa(new MPA(1L, "G"))
                 .releaseDate(LocalDate.of(2020, 8, 25))
                 .duration(100)
@@ -312,6 +330,7 @@ public class FilmDbStorageTest {
                 .name("Film2")
                 .description("Description2")
                 .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
                 .mpa(new MPA(1L, "G"))
                 .releaseDate(LocalDate.of(2020, 8, 25))
                 .duration(100)
@@ -323,6 +342,7 @@ public class FilmDbStorageTest {
                 .name("Film3")
                 .description("Description3")
                 .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
                 .mpa(new MPA(1L, "G"))
                 .releaseDate(LocalDate.of(2020, 8, 25))
                 .duration(100)
@@ -334,6 +354,7 @@ public class FilmDbStorageTest {
                 .name("Film4")
                 .description("Description4")
                 .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
                 .mpa(new MPA(1L, "G"))
                 .releaseDate(LocalDate.of(2020, 8, 25))
                 .duration(100)
@@ -384,7 +405,7 @@ public class FilmDbStorageTest {
 
         filmStorage.addLike(2, 2);
 
-        List<Film> popularFilms = filmStorage.getPopular(10);
+        List<Film> popularFilms = filmStorage.getPopularFilm(10, null, null);
 
         assertThat(popularFilms.size()).isEqualTo(4);
         assertThat(popularFilms.get(0).getId()).isEqualTo(3L);
@@ -392,11 +413,83 @@ public class FilmDbStorageTest {
         assertThat(popularFilms.get(2).getId()).isEqualTo(2L);
         assertThat(popularFilms.get(3).getId()).isEqualTo(4L);
 
-        popularFilms = filmStorage.getPopular(2);
+        popularFilms = filmStorage.getPopularFilm(2, null, null);
 
         assertThat(popularFilms.size()).isEqualTo(2);
         assertThat(popularFilms.get(0).getId()).isEqualTo(3L);
         assertThat(popularFilms.get(1).getId()).isEqualTo(1L);
+    }
+
+    @Test
+    public void testGetFilmWithName() {
+        Film film1 = Film.builder()
+                .id(1L)
+                .name("Film1TestYes")
+                .description("Description1")
+                .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
+                .mpa(new MPA(1L, "G"))
+                .releaseDate(LocalDate.of(2020, 8, 25))
+                .duration(100)
+                .likes(Collections.emptySet())
+                .build();
+
+        Film film2 = Film.builder()
+                .id(2L)
+                .name("Film2")
+                .description("Description2")
+                .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
+                .mpa(new MPA(1L, "G"))
+                .releaseDate(LocalDate.of(2020, 8, 25))
+                .duration(100)
+                .likes(Collections.emptySet())
+                .build();
+        filmStorage.add(film1);
+        filmStorage.add(film2);
+        List<Film> expList = new ArrayList<>();
+        expList.add(film1);
+        List<Film> directorsList = filmStorage.getFilmWithName("teSTyEs");
+        assertThat(directorsList)
+                .isNotEmpty()
+                .isNotNull()
+                .isEqualTo(expList);
+    }
+
+    @Test
+    public void testGetFilmWithDirectorsName() {
+        Director director = Director.builder()
+                .id(1L)
+                .name("Mega Famous Director 1")
+                .build();
+        Director director2 = Director.builder()
+                .id(2L)
+                .name("Famous Director 2")
+                .build();
+        Film film = Film.builder()
+                .id(1L)
+                .name("Film1")
+                .description("Description1")
+                .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
+                .mpa(new MPA(1L, "G"))
+                .releaseDate(LocalDate.of(2020, 8, 25))
+                .duration(100)
+                .likes(Collections.emptySet())
+                .build();
+        directorStorage.add(director);
+        directorStorage.add(director2);
+        List<Director> directorList = new ArrayList<>();
+        directorList.add(director);
+        film.setDirectors(directorList);
+        filmStorage.add(film);
+        List<Film> expList = new ArrayList<>();
+        expList.add(film);
+        List<Film> directorsList = filmStorage.getFilmWithDirectorName("meGA");
+        assertThat(directorsList)
+                .isNotEmpty()
+                .isNotNull()
+                .isEqualTo(expList);
     }
 
     @Test
@@ -408,6 +501,7 @@ public class FilmDbStorageTest {
                 .name("Film1")
                 .description("Description1")
                 .genres(Collections.emptyList())
+                .directors(Collections.emptyList())
                 .mpa(new MPA(1L, "G"))
                 .releaseDate(LocalDate.of(2020, 8, 25))
                 .duration(100)

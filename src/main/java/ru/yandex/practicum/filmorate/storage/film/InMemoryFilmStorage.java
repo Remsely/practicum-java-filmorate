@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.model.ErrorResponse;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
@@ -48,6 +47,26 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public void delete(long id) {
+        if (this.notContainFilm(id)) {
+            throw new EntityNotFoundException(
+                    new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
+            );
+        }
+        data.remove(id);
+    }
+
+    @Override
+    public List<Film> getAll() {
+        return new ArrayList<>(data.values());
+    }
+
+    @Override
+    public List<Film> getFilmWithDirectorName(String name) {
+        return null;
+    }
+
+    @Override
     public Film addLike(long id, long userId) {
         Film film = this.get(id);
         film.getLikes().add(userId);
@@ -62,15 +81,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopular(int count) {
-        return data.values().stream()
-                .sorted(Comparator.comparingInt(film -> -film.getLikes().size()))
-                .limit(count)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public Set<Long> getLikes(long id) {
+    public Set<Long> getFilmLikes(long id) {
         if (this.notContainFilm(id)) {
             throw new EntityNotFoundException(
                     new ErrorResponse("Film id", String.format("Не найден фильм с ID: %d.", id))
@@ -80,12 +91,37 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getAll() {
-        return new ArrayList<>(data.values());
+    public List<Film> getCommonFilms(long id1, long id2) {
+        return List.of();
     }
 
     @Override
     public boolean notContainFilm(long id) {
         return !data.containsKey(id);
+    }
+
+    @Override
+    public List<Film> getRecommendations(Long id) {
+        return List.of();
+    }
+
+    @Override
+    public List<Film> search(String query, List<String> by) {
+        return null;
+    }
+
+    @Override
+    public List<Film> getFilmWithName(String name) {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<Film> getDirectorSortedFilms(Long id, String sortBy) {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<Film> getPopularFilm(int count, Long genreId, Integer year) {
+        return new ArrayList<>();
     }
 }
